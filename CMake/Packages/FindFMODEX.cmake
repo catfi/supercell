@@ -1,0 +1,47 @@
+# FindFMODEX.cmake
+# Find FMod Ex library
+#
+# This module defines
+#  FMODEX_INCLUDE_DIR
+#  FMODEX_LIBRARIES
+#  FMODEX_FOUND
+#
+# Copyright(c) 2010, Michael Kuo, Zillians Inc.
+#
+
+#IF(FMODEX_INCLUDE_DIR AND FMODEX_LIBRARIES)
+#    SET(FMODEX_FIND_QUIETLY TRUE)
+#ENDIF()
+
+MESSAGE(STATUS "Looking for FMODEX...")
+
+IF(WIN32)
+#TODO
+	MESSAGE(ERROR "FMod Ex for Windows CMake is not implemented")
+ELSE()
+	FIND_PATH(FMODEX_INCLUDE_DIR fmodex/fmod.hpp
+		/usr/local/include
+		/usr/include
+		/opt/include
+	)
+
+	FIND_LIBRARY(FMODEX_LIBRARIES
+		NAMES fmodex64
+		PATHS
+		/usr/local/lib
+		/usr/lib
+		/usr/lib64
+	)
+ENDIF()
+
+MARK_AS_ADVANCED(FMODEX_INCLUDE_DIR)
+MARK_AS_ADVANCED(FMODEX_LIBRARIES)
+
+
+IF(FMODEX_INCLUDE_DIR AND FMODEX_LIBRARIES)
+	SET(FMODEX_FOUND TRUE)
+
+	MESSAGE(STATUS "FMOD EX include: " ${FMODEX_INCLUDE_DIR})
+	MESSAGE(STATUS "FMOD EX library: " ${FMODEX_LIBRARIES})
+ENDIF()
+

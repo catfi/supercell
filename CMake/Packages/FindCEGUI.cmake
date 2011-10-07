@@ -1,0 +1,45 @@
+# - Try to find CEGUI
+# Once done, this will define
+#
+#  CEGUI_FOUND - system has CEGUI
+#  CEGUI_INCLUDE_DIR - the CEGUI include directory
+#  CEGUI_LIBRARIES - link these to use CEGUI
+
+FIND_PATH(CEGUI_INCLUDE_DIR CEGUI.h
+    /usr/local/include/CEGUI/
+    /usr/local/include/
+    /usr/include/CEGUI/
+    /usr/include/
+)
+
+#set(CEGUI_INCLUDE_DIR ${CEGUI_INCLUDE_DIR}/CEGUI)
+
+set(CEGUI_NAMES CEGUIBase)
+
+FIND_LIBRARY(CEGUI_LIBRARIES
+  NAMES ${CEGUI_NAMES}
+  PATHS /usr/lib /usr/local/lib
+  )
+
+IF (CEGUI_LIBRARIES AND CEGUI_INCLUDE_DIR)
+    SET(CEGUI_FOUND 1)
+   IF (NOT CEGUI_FIND_QUIETLY)
+      MESSAGE(STATUS "Found CEGUI: libraries = ${CEGUI_LIBRARIES}, include = ${CEGUI_INCLUDE_DIR}")
+   ENDIF (NOT CEGUI_FIND_QUIETLY)
+ELSE()
+    SET(CEGUI_FOUND 0 CACHE BOOL "CEGUI not found")
+    IF(CEGUI_FIND_REQUIRED)
+        MESSAGE(FATAL_ERROR "Could not find CEGUI library")
+    ELSE()
+        MESSAGE(STATUS "Could NOT find CEGUI, disabled")
+    ENDIF()
+ENDIF()
+
+# Deprecated declarations.
+SET (NATIVE_CEGUI_INCLUDE_PATH ${CEGUI_INCLUDE_DIR} )
+GET_FILENAME_COMPONENT (NATIVE_CEGUI_LIB_PATH ${CEGUI_LIBRARIES} PATH)
+
+MARK_AS_ADVANCED(
+  CEGUI_LIBRARY
+  CEGUI_INCLUDE_DIR
+  )
