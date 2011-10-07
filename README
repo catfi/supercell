@@ -1,71 +1,48 @@
+Supercell, the Cloud Platform for Online Game Development
+=========================================================
 
-Zillians - The Ultimate GPU-Based MMOG Middleware
+Project Overview
+----------------
 
-Delivering unprecedented performance and scalability of MMOG
+Deploying an online game service can be a challenging and expensive
+endeavor. The cost of maintaining the real-time experience for
+end-users easily overruns the budget of many small and medium-sized
+game studios. Because of this, we have spent years to develop a
+complete MMO cloud computing solution based on patent pending GPU
+technology. With the high performance network technology, one GPU
+cluster can support over 10x the client capacity of current CPU-based
+solutions. This opens the door to more complex game design choices
+such as smarter AI, real-time physics, crowd simulation, path-finding,
+and since game rules are enforced on the cloud - better game cheating protection.
+Our cloud computing platform enables more game content to be created with less compromise.
 
--------------------------------------------------------------
+Game developers can freely augment/enrich their gameworlds without the worry of
+performance degradation and the burden of deployment and hosting.
 
-PROJECT OVERVIEW
+Dependencies
+------------
+* Boost C++ Library v1.47 or later
+* NVIDIA CUDA SDK 4.0 or later
+* Apache Log4cxx
+* Intel Threading Building Block (TBB) 3.0 or later
+* OFED 1.5.2 or later
 
-Zillians is a pioneer project aiming to build the most powerful
-MMOG platform on the planet by using new GPGPU concept with the 
-latest GPU hardware. As NVIDIA announce new GPU computing
-platform called CUDA in the Fab 2007, numerous applications have
-been developed and parallel approaches toward high performance 
-computing have taken over and changed the game rules. Zillians
-makes uses of parallel processing power to accelerate computation 
-in most MMOG server thus achieve best performance ever. 
-
-
--------------------------------------------------------------
-
-BUILDING AND INSTALLING ZILLIANS 
-
-Zillians uses CMake as the base building system to build Zillians 
-on verious platform. Before building the project, make sure you've
-installed all the dependent libraries.    
-To build the project, simply follow the procedures:
-
-     1) cd to the root of the source directory
-
-     2) mkdir build
-
-     3) cd build
-
-     4) ccmake ../
-
-        Here you can have different options to set either for 
-        debug/release build or device/emulation build for CUDA
-
-        Debug Device      ==> ccmake ../ -D CMAKE_BUILD_TYPE:String=Debug -D CUDA_BUILD_TYPE=Device ../
-		Debug Emulation   ==> ccmake ../ -D CMAKE_BUILD_TYPE:String=Debug -D CUDA_BUILD_TYPE=Emulation ../
-		Release Device    ==> ccmake ../ -D CMAKE_BUILD_TYPE:String=Release -D CUDA_BUILD_TYPE=Device ../
-		Release Emulation ==> ccmake ../ -D CMAKE_BUILD_TYPE:String=Release -D CUDA_BUILD_TYPE=Emulation ../
-
-	You may need to set the CUDA_INSTALL_PREFIX for the first 
-        time running ccmake. After that, it will be cached.
-
-     5) make
-
-	That's all!
-
-Zillians depends on a numbers of libraries including 
-     1) Boost C++ Library 1.36 or later(? not tested)
-     2) Boost Sandbox - Memory Extension (memory.hpp)
-     3) NVIDIA CUDA SDK 2.0b2
-     4) CUDA Data Parallel Primitives Library (CUDPP) 1.0b
-     4) LibEv Network Library
-     5) Apache Log4cxx
-     6) Intel Threading Building Block (TBB) 2.1 or later (the default one in Ubuntu does not work!!)
-
-Note that Zillians uses CUDPP (CUDA Data Parallel Primitives Library), 
-so please install CUDPP and copy the header file (cudpp.h) and lib file
-into CUDA's include and lib path. Same for the non-standard memory 
-extension for boost and other dependent libraries.
-
-Since CUDA installtion is not kind-of standard, please install 
-CUDA SDK onto /usr/local/cuda/NV_CUDA_SDK to avoid some path problem.
+Build
+-----
 
 
+Installation
+------------
 
+
+Usage
+-----
+
+
+Testing
+-------
+
+
+Contributing
+------------
 
