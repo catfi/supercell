@@ -289,14 +289,14 @@ SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib  CACHE PATH "Default library pat
 IF(NOT WIN32)
 #   ADD_SUBDIRECTORY(dep/linux/ofed/)
 	if( THRIFT_FOUND )
-		#	    ADD_SUBDIRECTORY(dep/linux/cassandra/)
+		ADD_SUBDIRECTORY(dep/linux/cassandra/)
 	ENDIF( THRIFT_FOUND )
 ENDIF()
 
 # thrust specialization build
-#IF(ENABLE_FEATURE_THRUST_SPECIALIZATION)
-	#ADD_SUBDIRECTORY(dep/linux/thrust)
-	#ENDIF()
+IF(ENABLE_FEATURE_THRUST_SPECIALIZATION)
+	ADD_SUBDIRECTORY(dep/linux/thrust)
+ENDIF()
 
 # automatically generate documentation
 SET(DEFAULT_DOCUMENT_PATH ${CMAKE_CURRENT_BINARY_DIR}/docs)
