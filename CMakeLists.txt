@@ -1,6 +1,6 @@
 #
 # Zillians MMO
-# Copyright (C) 2007-2010 Zillians.com, Inc.
+# Copyright (C) 2007-2012 Zillians.com, Inc.
 # For more information see http://www.zillians.com
 #
 # Zillians MMO is the library and runtime for massive multiplayer online game
