@@ -1,0 +1,54 @@
+diff -urN boost~/mpl/aux_/integral_wrapper.hpp boost/mpl/aux_/integral_wrapper.hpp
+--- boost~/mpl/aux_/integral_wrapper.hpp	2010-06-10 23:22:06.000000000 -0500
++++ boost/mpl/aux_/integral_wrapper.hpp	2010-06-10 23:23:58.000000000 -0500
+@@ -56,7 +56,7 @@
+ // have to #ifdef here: some compilers don't like the 'N + 1' form (MSVC),
+ // while some other don't like 'value + 1' (Borland), and some don't like
+ // either
+-#if BOOST_WORKAROUND(__EDG_VERSION__, <= 243)
++#if BOOST_WORKAROUND(__EDG_VERSION__, <= 243)  || defined(__CUDACC__)
+  private:
+     BOOST_STATIC_CONSTANT(AUX_WRAPPER_VALUE_TYPE, next_value = BOOST_MPL_AUX_STATIC_CAST(AUX_WRAPPER_VALUE_TYPE, (N + 1)));
+     BOOST_STATIC_CONSTANT(AUX_WRAPPER_VALUE_TYPE, prior_value = BOOST_MPL_AUX_STATIC_CAST(AUX_WRAPPER_VALUE_TYPE, (N - 1)));
+diff -urN boost~/mpl/size_t_fwd.hpp boost/mpl/size_t_fwd.hpp
+--- boost~/mpl/size_t_fwd.hpp	2010-06-10 23:22:06.000000000 -0500
++++ boost/mpl/size_t_fwd.hpp	2010-06-10 23:24:49.000000000 -0500
+@@ -20,7 +20,12 @@
+ 
+ BOOST_MPL_AUX_ADL_BARRIER_NAMESPACE_OPEN
+ 
++#if defined(__CUDACC__)
++typedef std::size_t std_size_t;
++template< std_size_t N > struct size_t;
++#else
+ template< std::size_t N > struct size_t;
++#endif
+ 
+ BOOST_MPL_AUX_ADL_BARRIER_NAMESPACE_CLOSE
+ BOOST_MPL_AUX_ADL_BARRIER_DECL(size_t)
+diff -urN boost~/mpl/size_t.hpp boost/mpl/size_t.hpp
+--- boost~/mpl/size_t.hpp	2010-06-10 23:22:06.000000000 -0500
++++ boost/mpl/size_t.hpp	2010-06-10 23:24:49.000000000 -0500
+@@ -16,10 +16,22 @@
+ 
+ #include <boost/mpl/size_t_fwd.hpp>
+ 
++
++#if defined(__CUDACC__)
++
++//typedef std::size_t std_size_t;
++#define AUX_WRAPPER_VALUE_TYPE std_size_t
++#define AUX_WRAPPER_NAME size_t
++#define AUX_WRAPPER_PARAMS(N) std_size_t N
++
++#else
++
+ #define AUX_WRAPPER_VALUE_TYPE std::size_t
+ #define AUX_WRAPPER_NAME size_t
+ #define AUX_WRAPPER_PARAMS(N) std::size_t N
+ 
++#endif
++
+ #include <boost/mpl/aux_/integral_wrapper.hpp>
+ 
+ #endif // BOOST_MPL_SIZE_T_HPP_INCLUDED

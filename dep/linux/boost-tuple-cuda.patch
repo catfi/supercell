@@ -1,0 +1,992 @@
+*** boost/tuple/detail/tuple_basic.hpp	2010-12-17 12:33:21.468358467 +0800
+--- boost/tuple/detail/tuple_basic.hpp	2010-12-09 17:04:22.299550376 +0800
+***************
+*** 40,45 ****
+--- 40,73 ----
+  
+  #include "boost/detail/workaround.hpp" // needed for BOOST_WORKAROUND
+  
++ #ifndef __CUDACC__
++ 
++ #ifndef __host__
++ #define __host__
++ #endif
++ 
++ #ifndef __device__
++ #define __device__
++ #endif
++ 
++ #ifndef __global__
++ #define __global__
++ #endif
++ 
++ #ifndef __noinline__
++ #define __noinline__
++ #endif
++ 
++ #ifndef __forceinline__
++ #define __forceinline__ inline
++ #endif
++ 
++ #ifndef __constant__
++ #define __constant__
++ #endif
++ 
++ #endif
++ 
+  namespace boost {
+  namespace tuples {
+  
+***************
+*** 48,54 ****
+  
+  // a helper function to provide a const null_type type temporary
+  namespace detail {
+!   inline const null_type cnull() { return null_type(); }
+  
+  
+  // -- if construct ------------------------------------------------
+--- 76,82 ----
+  
+  // a helper function to provide a const null_type type temporary
+  namespace detail {
+!   __device__ __host__ inline const null_type cnull() { return null_type(); }
+  
+  
+  // -- if construct ------------------------------------------------
+***************
+*** 92,98 ****
+  template< int N >
+  struct get_class {
+    template<class RET, class HT, class TT >
+!   inline static RET get(const cons<HT, TT>& t)
+    {
+  #if BOOST_WORKAROUND(__IBMCPP__,==600)
+      // vacpp 6.0 is not very consistent regarding the member template keyword
+--- 120,126 ----
+  template< int N >
+  struct get_class {
+    template<class RET, class HT, class TT >
+!   __device__ __host__ inline static RET get(const cons<HT, TT>& t)
+    {
+  #if BOOST_WORKAROUND(__IBMCPP__,==600)
+      // vacpp 6.0 is not very consistent regarding the member template keyword
+***************
+*** 103,109 ****
+  #endif
+    }
+    template<class RET, class HT, class TT >
+!   inline static RET get(cons<HT, TT>& t)
+    {
+  #if BOOST_WORKAROUND(__IBMCPP__,==600)
+      return get_class<N-1>::get<RET>(t.tail);
+--- 131,137 ----
+  #endif
+    }
+    template<class RET, class HT, class TT >
+!   __device__ __host__ inline static RET get(cons<HT, TT>& t)
+    {
+  #if BOOST_WORKAROUND(__IBMCPP__,==600)
+      return get_class<N-1>::get<RET>(t.tail);
+***************
+*** 116,127 ****
+  template<>
+  struct get_class<0> {
+    template<class RET, class HT, class TT>
+!   inline static RET get(const cons<HT, TT>& t)
+    {
+      return t.head;
+    }
+    template<class RET, class HT, class TT>
+!   inline static RET get(cons<HT, TT>& t)
+    {
+      return t.head;
+    }
+--- 144,155 ----
+  template<>
+  struct get_class<0> {
+    template<class RET, class HT, class TT>
+!   __device__ __host__ inline static RET get(const cons<HT, TT>& t)
+    {
+      return t.head;
+    }
+    template<class RET, class HT, class TT>
+!   __device__ __host__ inline static RET get(cons<HT, TT>& t)
+    {
+      return t.head;
+    }
+***************
+*** 254,260 ****
+  // get function for non-const cons-lists, returns a reference to the element
+  
+  template<int N, class HT, class TT>
+! inline typename access_traits<
+                    typename element<N, cons<HT, TT> >::type
+                  >::non_const_type
+  get(cons<HT, TT>& c BOOST_APPEND_EXPLICIT_TEMPLATE_NON_TYPE(int, N)) {
+--- 282,288 ----
+  // get function for non-const cons-lists, returns a reference to the element
+  
+  template<int N, class HT, class TT>
+! __device__ __host__ inline typename access_traits<
+                    typename element<N, cons<HT, TT> >::type
+                  >::non_const_type
+  get(cons<HT, TT>& c BOOST_APPEND_EXPLICIT_TEMPLATE_NON_TYPE(int, N)) {
+***************
+*** 275,281 ****
+  // the element. If the element is a reference, returns the reference
+  // as such (that is, can return a non-const reference)
+  template<int N, class HT, class TT>
+! inline typename access_traits<
+                    typename element<N, cons<HT, TT> >::type
+                  >::const_type
+  get(const cons<HT, TT>& c BOOST_APPEND_EXPLICIT_TEMPLATE_NON_TYPE(int, N)) {
+--- 303,309 ----
+  // the element. If the element is a reference, returns the reference
+  // as such (that is, can return a non-const reference)
+  template<int N, class HT, class TT>
+! __device__ __host__ inline typename access_traits<
+                    typename element<N, cons<HT, TT> >::type
+                  >::const_type
+  get(const cons<HT, TT>& c BOOST_APPEND_EXPLICIT_TEMPLATE_NON_TYPE(int, N)) {
+***************
+*** 302,308 ****
+  //  but: some_type x; // fails
+  
+  template <class T> class non_storeable_type {
+!   non_storeable_type();
+  };
+  
+  template <class T> struct wrap_non_storeable_type {
+--- 330,336 ----
+  //  but: some_type x; // fails
+  
+  template <class T> class non_storeable_type {
+! 	__forceinline__ __device__ __host__ non_storeable_type();
+  };
+  
+  template <class T> struct wrap_non_storeable_type {
+***************
+*** 328,346 ****
+    stored_head_type head;
+    tail_type tail;
+  
+!   typename access_traits<stored_head_type>::non_const_type
+    get_head() { return head; }
+  
+!   typename access_traits<tail_type>::non_const_type
+    get_tail() { return tail; }
+  
+!   typename access_traits<stored_head_type>::const_type
+    get_head() const { return head; }
+  
+!   typename access_traits<tail_type>::const_type
+    get_tail() const { return tail; }
+  
+!   cons() : head(), tail() {}
+    //  cons() : head(detail::default_arg<HT>::f()), tail() {}
+  
+    // the argument for head is not strictly needed, but it prevents
+--- 356,374 ----
+    stored_head_type head;
+    tail_type tail;
+  
+!   __forceinline__ __device__ __host__ typename access_traits<stored_head_type>::non_const_type
+    get_head() { return head; }
+  
+!   __forceinline__ __device__ __host__ typename access_traits<tail_type>::non_const_type
+    get_tail() { return tail; }
+  
+!   __forceinline__ __device__ __host__ typename access_traits<stored_head_type>::const_type
+    get_head() const { return head; }
+  
+!   __forceinline__ __device__ __host__ typename access_traits<tail_type>::const_type
+    get_tail() const { return tail; }
+  
+!   __forceinline__ __device__ __host__ cons() : head(), tail() {}
+    //  cons() : head(detail::default_arg<HT>::f()), tail() {}
+  
+    // the argument for head is not strictly needed, but it prevents
+***************
+*** 348,360 ****
+    // cannot be supported properly in any case (no assignment,
+    // copy works only if the tails are exactly the same type, ...)
+  
+!   cons(typename access_traits<stored_head_type>::parameter_type h,
+         const tail_type& t)
+      : head (h), tail(t) {}
+  
+    template <class T1, class T2, class T3, class T4, class T5,
+              class T6, class T7, class T8, class T9, class T10>
+!   cons( T1& t1, T2& t2, T3& t3, T4& t4, T5& t5,
+          T6& t6, T7& t7, T8& t8, T9& t9, T10& t10 )
+      : head (t1),
+        tail (t2, t3, t4, t5, t6, t7, t8, t9, t10, detail::cnull())
+--- 376,388 ----
+    // cannot be supported properly in any case (no assignment,
+    // copy works only if the tails are exactly the same type, ...)
+  
+!   __forceinline__ __device__ __host__ cons(typename access_traits<stored_head_type>::parameter_type h,
+         const tail_type& t)
+      : head (h), tail(t) {}
+  
+    template <class T1, class T2, class T3, class T4, class T5,
+              class T6, class T7, class T8, class T9, class T10>
+!   __forceinline__ __device__ __host__ cons( T1& t1, T2& t2, T3& t3, T4& t4, T5& t5,
+          T6& t6, T7& t7, T8& t8, T9& t9, T10& t10 )
+      : head (t1),
+        tail (t2, t3, t4, t5, t6, t7, t8, t9, t10, detail::cnull())
+***************
+*** 362,368 ****
+  
+    template <class T2, class T3, class T4, class T5,
+              class T6, class T7, class T8, class T9, class T10>
+!   cons( const null_type& /*t1*/, T2& t2, T3& t3, T4& t4, T5& t5,
+          T6& t6, T7& t7, T8& t8, T9& t9, T10& t10 )
+      : head (),
+        tail (t2, t3, t4, t5, t6, t7, t8, t9, t10, detail::cnull())
+--- 390,396 ----
+  
+    template <class T2, class T3, class T4, class T5,
+              class T6, class T7, class T8, class T9, class T10>
+!   __forceinline__ __device__ __host__ cons( const null_type& /*t1*/, T2& t2, T3& t3, T4& t4, T5& t5,
+          T6& t6, T7& t7, T8& t8, T9& t9, T10& t10 )
+      : head (),
+        tail (t2, t3, t4, t5, t6, t7, t8, t9, t10, detail::cnull())
+***************
+*** 370,397 ****
+  
+  
+    template <class HT2, class TT2>
+!   cons( const cons<HT2, TT2>& u ) : head(u.head), tail(u.tail) {}
+  
+    template <class HT2, class TT2>
+!   cons& operator=( const cons<HT2, TT2>& u ) {
+      head=u.head; tail=u.tail; return *this;
+    }
+  
+    // must define assignment operator explicitly, implicit version is
+    // illformed if HT is a reference (12.8. (12))
+!   cons& operator=(const cons& u) {
+      head = u.head; tail = u.tail;  return *this;
+    }
+  
+    template <class T1, class T2>
+!   cons& operator=( const std::pair<T1, T2>& u ) {
+      BOOST_STATIC_ASSERT(length<cons>::value == 2); // check length = 2
+      head = u.first; tail.head = u.second; return *this;
+    }
+  
+    // get member functions (non-const and const)
+    template <int N>
+!   typename access_traits<
+               typename element<N, cons<HT, TT> >::type
+             >::non_const_type
+    get() {
+--- 398,425 ----
+  
+  
+    template <class HT2, class TT2>
+!   __forceinline__ __device__ __host__ cons( const cons<HT2, TT2>& u ) : head(u.head), tail(u.tail) {}
+  
+    template <class HT2, class TT2>
+!   __forceinline__ __device__ __host__ cons& operator=( const cons<HT2, TT2>& u ) {
+      head=u.head; tail=u.tail; return *this;
+    }
+  
+    // must define assignment operator explicitly, implicit version is
+    // illformed if HT is a reference (12.8. (12))
+!   __forceinline__ __device__ __host__ cons& operator=(const cons& u) {
+      head = u.head; tail = u.tail;  return *this;
+    }
+  
+    template <class T1, class T2>
+!   __forceinline__ __device__ __host__ cons& operator=( const std::pair<T1, T2>& u ) {
+      BOOST_STATIC_ASSERT(length<cons>::value == 2); // check length = 2
+      head = u.first; tail.head = u.second; return *this;
+    }
+  
+    // get member functions (non-const and const)
+    template <int N>
+!   __forceinline__ __device__ __host__ typename access_traits<
+               typename element<N, cons<HT, TT> >::type
+             >::non_const_type
+    get() {
+***************
+*** 399,405 ****
+    }
+  
+    template <int N>
+!   typename access_traits<
+               typename element<N, cons<HT, TT> >::type
+             >::const_type
+    get() const {
+--- 427,433 ----
+    }
+  
+    template <int N>
+!   __forceinline__ __device__ __host__ typename access_traits<
+               typename element<N, cons<HT, TT> >::type
+             >::const_type
+    get() const {
+***************
+*** 418,465 ****
+      detail::wrap_non_storeable_type<head_type>::type stored_head_type;
+    stored_head_type head;
+  
+!   typename access_traits<stored_head_type>::non_const_type
+    get_head() { return head; }
+  
+!   null_type get_tail() { return null_type(); }
+  
+!   typename access_traits<stored_head_type>::const_type
+    get_head() const { return head; }
+  
+!   const null_type get_tail() const { return null_type(); }
+  
+    //  cons() : head(detail::default_arg<HT>::f()) {}
+!   cons() : head() {}
+  
+!   cons(typename access_traits<stored_head_type>::parameter_type h,
+         const null_type& = null_type())
+      : head (h) {}
+  
+    template<class T1>
+!   cons(T1& t1, const null_type&, const null_type&, const null_type&,
+         const null_type&, const null_type&, const null_type&,
+         const null_type&, const null_type&, const null_type&)
+    : head (t1) {}
+  
+!   cons(const null_type&,
+         const null_type&, const null_type&, const null_type&,
+         const null_type&, const null_type&, const null_type&,
+         const null_type&, const null_type&, const null_type&)
+    : head () {}
+  
+    template <class HT2>
+!   cons( const cons<HT2, null_type>& u ) : head(u.head) {}
+  
+    template <class HT2>
+!   cons& operator=(const cons<HT2, null_type>& u )
+    { head = u.head; return *this; }
+  
+    // must define assignment operator explicitely, implicit version
+    // is illformed if HT is a reference
+!   cons& operator=(const cons& u) { head = u.head; return *this; }
+  
+    template <int N>
+!   typename access_traits<
+               typename element<N, self_type>::type
+              >::non_const_type
+    get(BOOST_EXPLICIT_TEMPLATE_NON_TYPE(int, N)) {
+--- 446,493 ----
+      detail::wrap_non_storeable_type<head_type>::type stored_head_type;
+    stored_head_type head;
+  
+!   __forceinline__ __device__ __host__ typename access_traits<stored_head_type>::non_const_type
+    get_head() { return head; }
+  
+!   __forceinline__ __device__ __host__ null_type get_tail() { return null_type(); }
+  
+!   __forceinline__ __device__ __host__ typename access_traits<stored_head_type>::const_type
+    get_head() const { return head; }
+  
+!   __forceinline__ __device__ __host__ const null_type get_tail() const { return null_type(); }
+  
+    //  cons() : head(detail::default_arg<HT>::f()) {}
+!   __forceinline__ __device__ __host__ cons() : head() {}
+  
+!   __forceinline__ __device__ __host__ cons(typename access_traits<stored_head_type>::parameter_type h,
+         const null_type& = null_type())
+      : head (h) {}
+  
+    template<class T1>
+!   __forceinline__ __device__ __host__ cons(T1& t1, const null_type&, const null_type&, const null_type&,
+         const null_type&, const null_type&, const null_type&,
+         const null_type&, const null_type&, const null_type&)
+    : head (t1) {}
+  
+!   __forceinline__ __device__ __host__ cons(const null_type&,
+         const null_type&, const null_type&, const null_type&,
+         const null_type&, const null_type&, const null_type&,
+         const null_type&, const null_type&, const null_type&)
+    : head () {}
+  
+    template <class HT2>
+!   __forceinline__ __device__ __host__ cons( const cons<HT2, null_type>& u ) : head(u.head) {}
+  
+    template <class HT2>
+!   __forceinline__ __device__ __host__ cons& operator=(const cons<HT2, null_type>& u )
+    { head = u.head; return *this; }
+  
+    // must define assignment operator explicitely, implicit version
+    // is illformed if HT is a reference
+!   __forceinline__ __device__ __host__ cons& operator=(const cons& u) { head = u.head; return *this; }
+  
+    template <int N>
+!   __forceinline__ __device__ __host__ typename access_traits<
+               typename element<N, self_type>::type
+              >::non_const_type
+    get(BOOST_EXPLICIT_TEMPLATE_NON_TYPE(int, N)) {
+***************
+*** 467,473 ****
+    }
+  
+    template <int N>
+!   typename access_traits<
+               typename element<N, self_type>::type
+             >::const_type
+    get(BOOST_EXPLICIT_TEMPLATE_NON_TYPE(int, N)) const {
+--- 495,501 ----
+    }
+  
+    template <int N>
+!   __forceinline__ __device__ __host__ typename access_traits<
+               typename element<N, self_type>::type
+             >::const_type
+    get(BOOST_EXPLICIT_TEMPLATE_NON_TYPE(int, N)) const {
+***************
+*** 541,567 ****
+  
+  
+  // access_traits<T>::parameter_type takes non-reference types as const T&
+!   tuple() {}
+  
+!   tuple(typename access_traits<T0>::parameter_type t0)
+      : inherited(t0, detail::cnull(), detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull()) {}
+  
+!   tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1)
+      : inherited(t0, t1, detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull()) {}
+  
+!   tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2)
+      : inherited(t0, t1, t2, detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull()) {}
+  
+!   tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3)
+--- 569,595 ----
+  
+  
+  // access_traits<T>::parameter_type takes non-reference types as const T&
+!   __forceinline__ __device__ __host__ tuple() {}
+  
+!   __forceinline__ __device__ __host__ tuple(typename access_traits<T0>::parameter_type t0)
+      : inherited(t0, detail::cnull(), detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull()) {}
+  
+!   __forceinline__ __device__ __host__ tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1)
+      : inherited(t0, t1, detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull()) {}
+  
+!   __forceinline__ __device__ __host__ tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2)
+      : inherited(t0, t1, t2, detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull()) {}
+  
+!   __forceinline__ __device__ __host__ tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3)
+***************
+*** 569,575 ****
+                  detail::cnull(), detail::cnull(), detail::cnull(),
+                  detail::cnull()) {}
+  
+!   tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+--- 597,603 ----
+                  detail::cnull(), detail::cnull(), detail::cnull(),
+                  detail::cnull()) {}
+  
+!   __forceinline__ __device__ __host__ tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+***************
+*** 577,583 ****
+      : inherited(t0, t1, t2, t3, t4, detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull()) {}
+  
+!   tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+--- 605,611 ----
+      : inherited(t0, t1, t2, t3, t4, detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull(), detail::cnull()) {}
+  
+!   __forceinline__ __device__ __host__ tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+***************
+*** 586,592 ****
+      : inherited(t0, t1, t2, t3, t4, t5, detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull()) {}
+  
+!   tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+--- 614,620 ----
+      : inherited(t0, t1, t2, t3, t4, t5, detail::cnull(), detail::cnull(),
+                  detail::cnull(), detail::cnull()) {}
+  
+!   __forceinline__ __device__ __host__ tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+***************
+*** 596,602 ****
+      : inherited(t0, t1, t2, t3, t4, t5, t6, detail::cnull(),
+                  detail::cnull(), detail::cnull()) {}
+  
+!   tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+--- 624,630 ----
+      : inherited(t0, t1, t2, t3, t4, t5, t6, detail::cnull(),
+                  detail::cnull(), detail::cnull()) {}
+  
+!   __forceinline__ __device__ __host__ tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+***************
+*** 607,613 ****
+      : inherited(t0, t1, t2, t3, t4, t5, t6, t7, detail::cnull(),
+                  detail::cnull()) {}
+  
+!   tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+--- 635,641 ----
+      : inherited(t0, t1, t2, t3, t4, t5, t6, t7, detail::cnull(),
+                  detail::cnull()) {}
+  
+!   __forceinline__ __device__ __host__ tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+***************
+*** 618,624 ****
+          typename access_traits<T8>::parameter_type t8)
+      : inherited(t0, t1, t2, t3, t4, t5, t6, t7, t8, detail::cnull()) {}
+  
+!   tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+--- 646,652 ----
+          typename access_traits<T8>::parameter_type t8)
+      : inherited(t0, t1, t2, t3, t4, t5, t6, t7, t8, detail::cnull()) {}
+  
+!   __forceinline__ __device__ __host__ tuple(typename access_traits<T0>::parameter_type t0,
+          typename access_traits<T1>::parameter_type t1,
+          typename access_traits<T2>::parameter_type t2,
+          typename access_traits<T3>::parameter_type t3,
+***************
+*** 632,647 ****
+  
+  
+    template<class U1, class U2>
+!   tuple(const cons<U1, U2>& p) : inherited(p) {}
+  
+    template <class U1, class U2>
+!   tuple& operator=(const cons<U1, U2>& k) {
+      inherited::operator=(k);
+      return *this;
+    }
+  
+    template <class U1, class U2>
+!   tuple& operator=(const std::pair<U1, U2>& k) {
+      BOOST_STATIC_ASSERT(length<tuple>::value == 2);// check_length = 2
+      this->head = k.first;
+      this->tail.head = k.second;
+--- 660,675 ----
+  
+  
+    template<class U1, class U2>
+!   __forceinline__ __device__ __host__ tuple(const cons<U1, U2>& p) : inherited(p) {}
+  
+    template <class U1, class U2>
+!   __forceinline__ __device__ __host__ tuple& operator=(const cons<U1, U2>& k) {
+      inherited::operator=(k);
+      return *this;
+    }
+  
+    template <class U1, class U2>
+!   __forceinline__ __device__ __host__ tuple& operator=(const std::pair<U1, U2>& k) {
+      BOOST_STATIC_ASSERT(length<tuple>::value == 2);// check_length = 2
+      this->head = k.first;
+      this->tail.head = k.second;
+***************
+*** 666,672 ****
+  struct swallow_assign {
+  
+    template<typename T>
+!   swallow_assign const& operator=(const T&) const {
+      return *this;
+    }
+  };
+--- 694,700 ----
+  struct swallow_assign {
+  
+    template<typename T>
+!   __forceinline__ __device__ __host__ swallow_assign const& operator=(const T&) const {
+      return *this;
+    }
+  };
+***************
+*** 786,825 ****
+  } // end detail
+  
+  // -make_tuple function templates -----------------------------------
+! inline tuple<> make_tuple() {
+    return tuple<>();
+  }
+  
+  template<class T0>
+! inline typename detail::make_tuple_mapper<T0>::type
+  make_tuple(const T0& t0) {
+    typedef typename detail::make_tuple_mapper<T0>::type t;
+    return t(t0);
+  }
+  
+  template<class T0, class T1>
+! inline typename detail::make_tuple_mapper<T0, T1>::type
+  make_tuple(const T0& t0, const T1& t1) {
+    typedef typename detail::make_tuple_mapper<T0, T1>::type t;
+    return t(t0, t1);
+  }
+  
+  template<class T0, class T1, class T2>
+! inline typename detail::make_tuple_mapper<T0, T1, T2>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2) {
+    typedef typename detail::make_tuple_mapper<T0, T1, T2>::type t;
+    return t(t0, t1, t2);
+  }
+  
+  template<class T0, class T1, class T2, class T3>
+! inline typename detail::make_tuple_mapper<T0, T1, T2, T3>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3) {
+    typedef typename detail::make_tuple_mapper<T0, T1, T2, T3>::type t;
+    return t(t0, t1, t2, t3);
+  }
+  
+  template<class T0, class T1, class T2, class T3, class T4>
+! inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4) {
+    typedef typename detail::make_tuple_mapper<T0, T1, T2, T3, T4>::type t;
+--- 814,853 ----
+  } // end detail
+  
+  // -make_tuple function templates -----------------------------------
+! __device__ __host__ inline tuple<> make_tuple() {
+    return tuple<>();
+  }
+  
+  template<class T0>
+! __device__ __host__ inline typename detail::make_tuple_mapper<T0>::type
+  make_tuple(const T0& t0) {
+    typedef typename detail::make_tuple_mapper<T0>::type t;
+    return t(t0);
+  }
+  
+  template<class T0, class T1>
+! __device__ __host__ inline typename detail::make_tuple_mapper<T0, T1>::type
+  make_tuple(const T0& t0, const T1& t1) {
+    typedef typename detail::make_tuple_mapper<T0, T1>::type t;
+    return t(t0, t1);
+  }
+  
+  template<class T0, class T1, class T2>
+! __device__ __host__ inline typename detail::make_tuple_mapper<T0, T1, T2>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2) {
+    typedef typename detail::make_tuple_mapper<T0, T1, T2>::type t;
+    return t(t0, t1, t2);
+  }
+  
+  template<class T0, class T1, class T2, class T3>
+! __device__ __host__ inline typename detail::make_tuple_mapper<T0, T1, T2, T3>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3) {
+    typedef typename detail::make_tuple_mapper<T0, T1, T2, T3>::type t;
+    return t(t0, t1, t2, t3);
+  }
+  
+  template<class T0, class T1, class T2, class T3, class T4>
+! __device__ __host__ inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4) {
+    typedef typename detail::make_tuple_mapper<T0, T1, T2, T3, T4>::type t;
+***************
+*** 827,833 ****
+  }
+  
+  template<class T0, class T1, class T2, class T3, class T4, class T5>
+! inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4, const T5& t5) {
+    typedef typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5>::type t;
+--- 855,861 ----
+  }
+  
+  template<class T0, class T1, class T2, class T3, class T4, class T5>
+! __device__ __host__ inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4, const T5& t5) {
+    typedef typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5>::type t;
+***************
+*** 835,841 ****
+  }
+  
+  template<class T0, class T1, class T2, class T3, class T4, class T5, class T6>
+! inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5, T6>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4, const T5& t5, const T6& t6) {
+    typedef typename detail::make_tuple_mapper
+--- 863,869 ----
+  }
+  
+  template<class T0, class T1, class T2, class T3, class T4, class T5, class T6>
+! __device__ __host__ inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5, T6>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4, const T5& t5, const T6& t6) {
+    typedef typename detail::make_tuple_mapper
+***************
+*** 845,851 ****
+  
+  template<class T0, class T1, class T2, class T3, class T4, class T5, class T6,
+           class T7>
+! inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5, T6, T7>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4, const T5& t5, const T6& t6, const T7& t7) {
+    typedef typename detail::make_tuple_mapper
+--- 873,879 ----
+  
+  template<class T0, class T1, class T2, class T3, class T4, class T5, class T6,
+           class T7>
+! __device__ __host__ inline typename detail::make_tuple_mapper<T0, T1, T2, T3, T4, T5, T6, T7>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4, const T5& t5, const T6& t6, const T7& t7) {
+    typedef typename detail::make_tuple_mapper
+***************
+*** 855,861 ****
+  
+  template<class T0, class T1, class T2, class T3, class T4, class T5, class T6,
+           class T7, class T8>
+! inline typename detail::make_tuple_mapper
+    <T0, T1, T2, T3, T4, T5, T6, T7, T8>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4, const T5& t5, const T6& t6, const T7& t7,
+--- 883,889 ----
+  
+  template<class T0, class T1, class T2, class T3, class T4, class T5, class T6,
+           class T7, class T8>
+! __device__ __host__ inline typename detail::make_tuple_mapper
+    <T0, T1, T2, T3, T4, T5, T6, T7, T8>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4, const T5& t5, const T6& t6, const T7& t7,
+***************
+*** 867,873 ****
+  
+  template<class T0, class T1, class T2, class T3, class T4, class T5, class T6,
+           class T7, class T8, class T9>
+! inline typename detail::make_tuple_mapper
+    <T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4, const T5& t5, const T6& t6, const T7& t7,
+--- 895,901 ----
+  
+  template<class T0, class T1, class T2, class T3, class T4, class T5, class T6,
+           class T7, class T8, class T9>
+! __device__ __host__ inline typename detail::make_tuple_mapper
+    <T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>::type
+  make_tuple(const T0& t0, const T1& t1, const T2& t2, const T3& t3,
+                    const T4& t4, const T5& t5, const T6& t6, const T7& t7,
+***************
+*** 881,926 ****
+  
+  // Tie function templates -------------------------------------------------
+  template<class T1>
+! inline tuple<T1&> tie(T1& t1) {
+    return tuple<T1&> (t1);
+  }
+  
+  template<class T1, class T2>
+! inline tuple<T1&, T2&> tie(T1& t1, T2& t2) {
+    return tuple<T1&, T2&> (t1, t2);
+  }
+  
+  template<class T1, class T2, class T3>
+! inline tuple<T1&, T2&, T3&> tie(T1& t1, T2& t2, T3& t3) {
+    return tuple<T1&, T2&, T3&> (t1, t2, t3);
+  }
+  
+  template<class T1, class T2, class T3, class T4>
+! inline tuple<T1&, T2&, T3&, T4&> tie(T1& t1, T2& t2, T3& t3, T4& t4) {
+    return tuple<T1&, T2&, T3&, T4&> (t1, t2, t3, t4);
+  }
+  
+  template<class T1, class T2, class T3, class T4, class T5>
+! inline tuple<T1&, T2&, T3&, T4&, T5&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5) {
+    return tuple<T1&, T2&, T3&, T4&, T5&> (t1, t2, t3, t4, t5);
+  }
+  
+  template<class T1, class T2, class T3, class T4, class T5, class T6>
+! inline tuple<T1&, T2&, T3&, T4&, T5&, T6&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6) {
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&> (t1, t2, t3, t4, t5, t6);
+  }
+  
+  template<class T1, class T2, class T3, class T4, class T5, class T6, class T7>
+! inline tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7) {
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&> (t1, t2, t3, t4, t5, t6, t7);
+  }
+  
+  template<class T1, class T2, class T3, class T4, class T5, class T6, class T7,
+           class T8>
+! inline tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7, T8& t8) {
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&>
+             (t1, t2, t3, t4, t5, t6, t7, t8);
+--- 909,954 ----
+  
+  // Tie function templates -------------------------------------------------
+  template<class T1>
+! __device__ __host__ inline tuple<T1&> tie(T1& t1) {
+    return tuple<T1&> (t1);
+  }
+  
+  template<class T1, class T2>
+! __device__ __host__ inline tuple<T1&, T2&> tie(T1& t1, T2& t2) {
+    return tuple<T1&, T2&> (t1, t2);
+  }
+  
+  template<class T1, class T2, class T3>
+! __device__ __host__ inline tuple<T1&, T2&, T3&> tie(T1& t1, T2& t2, T3& t3) {
+    return tuple<T1&, T2&, T3&> (t1, t2, t3);
+  }
+  
+  template<class T1, class T2, class T3, class T4>
+! __device__ __host__ inline tuple<T1&, T2&, T3&, T4&> tie(T1& t1, T2& t2, T3& t3, T4& t4) {
+    return tuple<T1&, T2&, T3&, T4&> (t1, t2, t3, t4);
+  }
+  
+  template<class T1, class T2, class T3, class T4, class T5>
+! __device__ __host__ inline tuple<T1&, T2&, T3&, T4&, T5&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5) {
+    return tuple<T1&, T2&, T3&, T4&, T5&> (t1, t2, t3, t4, t5);
+  }
+  
+  template<class T1, class T2, class T3, class T4, class T5, class T6>
+! __device__ __host__ inline tuple<T1&, T2&, T3&, T4&, T5&, T6&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6) {
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&> (t1, t2, t3, t4, t5, t6);
+  }
+  
+  template<class T1, class T2, class T3, class T4, class T5, class T6, class T7>
+! __device__ __host__ inline tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7) {
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&> (t1, t2, t3, t4, t5, t6, t7);
+  }
+  
+  template<class T1, class T2, class T3, class T4, class T5, class T6, class T7,
+           class T8>
+! __device__ __host__ inline tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7, T8& t8) {
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&>
+             (t1, t2, t3, t4, t5, t6, t7, t8);
+***************
+*** 928,934 ****
+  
+  template<class T1, class T2, class T3, class T4, class T5, class T6, class T7,
+           class T8, class T9>
+! inline tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7, T8& t8,
+             T9& t9) {
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&>
+--- 956,962 ----
+  
+  template<class T1, class T2, class T3, class T4, class T5, class T6, class T7,
+           class T8, class T9>
+! __device__ __host__ inline tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7, T8& t8,
+             T9& t9) {
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&>
+***************
+*** 937,943 ****
+  
+  template<class T1, class T2, class T3, class T4, class T5, class T6, class T7,
+           class T8, class T9, class T10>
+! inline tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&, T10&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7, T8& t8,
+             T9& t9, T10& t10) {
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&, T10&>
+--- 965,971 ----
+  
+  template<class T1, class T2, class T3, class T4, class T5, class T6, class T7,
+           class T8, class T9, class T10>
+! __device__ __host__ inline tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&, T10&>
+  tie(T1& t1, T2& t2, T3& t3, T4& t4, T5& t5, T6& t6, T7& t7, T8& t8,
+             T9& t9, T10& t10) {
+    return tuple<T1&, T2&, T3&, T4&, T5&, T6&, T7&, T8&, T9&, T10&>
+***************
+*** 948,953 ****
+--- 976,1009 ----
+  } // end of namespace boost
+  
+  
++ #ifndef __CUDACC__
++ 
++ #ifdef __host__
++ #undef __host__
++ #endif
++ 
++ #ifdef __device__
++ #undef __device__
++ #endif
++ 
++ #ifdef __global__
++ #undef __global__
++ #endif
++ 
++ #ifdef __noinline__
++ #undef __noinline__
++ #endif
++ 
++ #ifdef __forceinline__
++ #undef __forceinline__
++ #endif
++ 
++ #ifdef __constant__
++ #undef __constant__
++ #endif
++ 
++ #endif
++ 
+  #endif // BOOST_TUPLE_BASIC_HPP
+  
+  
