@@ -63,6 +63,7 @@ zillians_register_game(GAME_NAME "localTestSOH"                               GA
 zillians_register_game(GAME_NAME "Emu"                                        GAME_ID 0)
 zillians_register_game(GAME_NAME "SimpleTextClientTest-SingleCommand"         GAME_ID 0)
 zillians_register_game(GAME_NAME "SimpleTest"                                 GAME_ID 0)
+zillians_register_game(GAME_NAME "PaperScissorsRock"                          GAME_ID 0)
 
 zillians_register_game(GAME_NAME "ScheduleAPITest"                            GAME_ID 0)
 
