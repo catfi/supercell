@@ -19,8 +19,23 @@
 # Contact Information: info@zillians.com
 #
 
-execute_process(COMMAND ${TEST_PROG}
-                RESULT_VARIABLE __has_error)
-if(__has_error)
-    message(FATAL_ERROR "test failed - nonzero error code returned")
+string(REPLACE " " ";" TEST_PROG ${TEST_PROG})
+
+execute_process(
+    COMMAND ${TEST_PROG}
+    RESULT_VARIABLE _exit_code
+    )
+
+if(EXPECT_FAIL)
+    if(_exit_code)
+        message(STATUS "success! (run.cmake) -- expect fail and exit code nonzero")
+    else()
+        message(FATAL_ERROR "fail! (run.cmake) -- expect fail but exit code zero")
+    endif()
+else()
+    if(NOT _exit_code)
+        message(STATUS "success! (run.cmake) -- exit code zero")
+    else()
+        message(FATAL_ERROR "fail! (run.cmake) -- exit code == " ${_exit_code})
+    endif()
 endif()
