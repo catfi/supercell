@@ -153,7 +153,7 @@ endmacro()
 
 macro(zillians_add_complex_test)
     # parse the argument options
-    set(__option_catalogries "TARGET;SHELL;DEPENDS")
+    set(__option_catalogries "TARGET;SHELL;DEPENDS;EXPECT_FAIL")
     set(__temporary_options_variable ${ARGN})
     split_options(__temporary_options_variable "default" __option_catalogries __options_set) 
     
@@ -161,6 +161,7 @@ macro(zillians_add_complex_test)
     hashmap(GET __options_set "TARGET" __target)
     hashmap(GET __options_set "SHELL" __shell)
     hashmap(GET __options_set "DEPENDS" __depends)
+    hashmap(GET __options_set "EXPECT_FAIL" __expect_fail)
     list(LENGTH __target __number_of_targets)
     list(LENGTH __shell __number_of_shell)
     list(LENGTH __depends __number_of_depends)
@@ -176,7 +177,7 @@ macro(zillians_add_complex_test)
     
     set( cmd_string )
     foreach( cmd ${__shell} )
-        set( cmd_string ${cmd_string} ${cmd} ) 
+        set( cmd_string ${cmd_string} ${cmd} )
     endforeach( cmd )
     
     # get the target location
@@ -184,6 +185,11 @@ macro(zillians_add_complex_test)
     
     # create test targets and set dependencies
     add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG="${__shell}" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
+    if( __expect_fail )
+        set( cmd_string ${CMAKE_COMMAND} -DTEST_PROG="${cmd_string}" -DEXPECT_FAIL="TRUE" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake )
+    else()
+        set( cmd_string ${CMAKE_COMMAND} -DTEST_PROG="${cmd_string}" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake )
+    endif()
     if( __number_of_depends EQUAL 0 )
         if(TARGET ${__target})
             add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${cmd_string} )
