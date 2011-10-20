@@ -380,6 +380,13 @@ IF( OPENSSL_FOUND )
 ENDIF()
 
 ##########################################################################
+# Find "PythonLibs"
+FIND_PACKAGE(PythonLibs)
+IF( PYTHONLIBS_FOUND )
+    message( "-- Found PythonLibs" )
+ENDIF()
+
+##########################################################################
 # Add build-enable preprocessors to global compilation definition
 IF(APRCORE_FOUND)
 	ADD_DEFINITIONS(-DBUILD_WITH_APRCORE)
@@ -468,6 +475,10 @@ ENDIF(RABBITMQ_FOUND)
 IF(JUSTTHREAD_FOUND)
 	ADD_DEFINITIONS(-DBUILD_WITH_JUSTTHREAD)
 ENDIF(JUSTTHREAD_FOUND)
+
+IF(PYTHONLIBS_FOUND)
+    ADD_DEFINITIONS(-DBUILD_WITH_PYTHONLIBS)
+ENDIF(PYTHONLIBS_FOUND)
 
 ##########################################################################
 # Add all header paths to default search
@@ -562,6 +573,10 @@ IF(JUSTTHREAD_FOUND)
 	LIST(APPEND ZILLIANS_INCLUDE_DIRS ${JUSTTHREAD_INCLUDE_DIR})
 ENDIF(JUSTTHREAD_FOUND)
 
+IF(PYTHONLIBS_FOUND)
+    LIST(APPEND ZILLIANS_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
+ENDIF(PYTHONLIBS_FOUND)
+
 INCLUDE_DIRECTORIES(
 		${ZILLIANS_INCLUDE_DIRS}
 		)
@@ -633,6 +648,10 @@ ENDIF(TBB_FOUND)
 #    SET(RDMA_FOUND TRUE)
 #        ADD_DEFINITIONS(-DBUILD_WITH_RDMA)
 #ENDIF()
+
+IF(PYTHONLIBS_FOUND)
+    LIST(APPEND ZILLIANS_DEP_LIBS ${PYTHON_LIBRARIES})
+ENDIF(PYTHONLIBS_FOUND)
 
 SET(ZILLIANS_DEP_LIBS ${ZILLIANS_DEP_LIBS} CACHE STRING "Gloabl depencent libraries" FORCE)
 MESSAGE(STATUS "The global dependecies: ${ZILLIANS_DEP_LIBS}")
