@@ -387,6 +387,13 @@ IF( PYTHONLIBS_FOUND )
 ENDIF()
 
 ##########################################################################
+# Find "ZLIB"
+FIND_PACKAGE(ZLIB)
+IF( ZLIB_FOUND )
+    message( "-- Found Zlib Version (${ZLIB_VERSION_STRING})" )
+ENDIF()
+
+##########################################################################
 # Add build-enable preprocessors to global compilation definition
 IF(APRCORE_FOUND)
 	ADD_DEFINITIONS(-DBUILD_WITH_APRCORE)
@@ -577,6 +584,10 @@ IF(PYTHONLIBS_FOUND)
     LIST(APPEND ZILLIANS_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
 ENDIF(PYTHONLIBS_FOUND)
 
+IF(ZLIB_FOUND)
+    LIST(APPEND ZILLIANS_INCLUDE_DIRS ${ZLIB_INCLUDE_DIRS})
+ENDIF(ZLIB_FOUND)
+
 INCLUDE_DIRECTORIES(
 		${ZILLIANS_INCLUDE_DIRS}
 		)
@@ -638,6 +649,10 @@ ENDIF(LOG4CXX_FOUND)
 IF(TBB_FOUND)
 	LIST(APPEND ZILLIANS_DEP_LIBS ${TBB_LIBRARIES})
 ENDIF(TBB_FOUND)
+
+IF(ZLIB_FOUND)
+	LIST(APPEND ZILLIANS_DEP_LIBS ${ZLIB_LIBRARIES})
+ENDIF(ZLIB_FOUND)
 
 #IF(RDMA_FOUND)
     #LIST(APPEND ZILLIANS_DEP_LIBS "/usr/lib/librdmacm.a;/usr/lib/libibverbs.a")
