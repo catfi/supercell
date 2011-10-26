@@ -4,7 +4,7 @@
 # COG_SCRIPT - system has COG
 
 IF(NOT WIN32)
-    FIND_PROGRAM(COG_SCRIPT "cog.py" PATHS
+    FIND_PATH(COG_SCRIPT "cog.py" PATHS
         /usr/local/bin
         )
 ENDIF()
