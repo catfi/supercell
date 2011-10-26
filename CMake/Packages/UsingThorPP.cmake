@@ -22,24 +22,25 @@
 MACRO(THORPP_GEN)
 
     # parse the argument options
-    SET(__option_catalogries "OUTPUT;TPP_FILE;TO_LANGUAGE;FROM_LANGUAGE")
+    SET(__option_catalogries "OUTPUT;THORPP_FILE;FROM_LANGUAGE;TO_LANGUAGE")
     SET(__temporary_options_variable ${ARGN})
     split_options(__temporary_options_variable "default" __option_catalogries __options_set)
 
     # check if the number of targets specified is wrong
     hashmap(GET __options_set "OUTPUT"   __output)
-    hashmap(GET __options_set "TPP_FILE" __tpp_file)
-    hashmap(GET __options_set "TO_LANGUAGE" __to_language)
+    hashmap(GET __options_set "THORPP_FILE" __thorpp_file)
     hashmap(GET __options_set "FROM_LANGUAGE" __from_language)
+    hashmap(GET __options_set "TO_LANGUAGE" __to_language)
 
-    IF(DEFINED __tpp_file)
+    IF(DEFINED __thorpp_file)
 
-        STRING(REGEX REPLACE ".tpp" ".cpp" OUTPUT_SOURCE_RENAMED ${__tpp_file})
-        add_custom_command(
-            OUTPUT ${OUTPUT_SOURCE_RENAMED}
-            COMMAND ${THORPP_SCRIPT} ${__tpp_file} --to ${__to_language} --from ${__from_language} > ${OUTPUT_SOURCE_RENAMED}
-            DEPENDS ${__tpp_file}
+        STRING(REGEX REPLACE ".tpp" ".cpp" OUTPUT_SOURCE_RENAMED ${__thorpp_file})
+        SET(TEMP)
+        EXECUTE_PROCESS(
+            COMMAND ${THORPP_PROGRAM} --input ${__thorpp_file} --from ${__from_language} --to ${__to_language}
+            OUTPUT_VARIABLE TEMP
             )
+        FILE(WRITE ${OUTPUT_SOURCE_RENAMED} ${TEMP})
         LIST(APPEND ${__output} ${OUTPUT_SOURCE_RENAMED})
 
     ENDIF()

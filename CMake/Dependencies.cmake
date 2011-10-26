@@ -145,14 +145,20 @@ ENDIF()
 
 ##########################################################################
 FIND_PACKAGE(XDot)
-IF(XDot_FOUND)
+IF(XDOT_FOUND)
     MESSAGE( "-- Found XDot" )
 ENDIF()
 
 ##########################################################################
 FIND_PACKAGE(Cog)
-IF(Cog_FOUND)
+IF(COG_FOUND)
     MESSAGE( "-- Found Cog" )
+ENDIF()
+
+##########################################################################
+FIND_PACKAGE(ThorPP)
+IF(THORPP_FOUND)
+    MESSAGE( "-- Found ThorPP" )
 ENDIF()
 
 ##########################################################################
