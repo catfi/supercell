@@ -1,4 +1,4 @@
-# - Try to find the XDOT libraries
+# - Try to find the XDOT script
 # Once done this will define
 #
 # XDOT_SCRIPT - system has XDOT

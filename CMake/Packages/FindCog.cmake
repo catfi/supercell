@@ -1,4 +1,4 @@
-# - Try to find the COG libraries
+# - Try to find the COG script
 # Once done this will define
 #
 # COG_SCRIPT - system has COG
