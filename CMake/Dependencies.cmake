@@ -144,6 +144,18 @@ IF(GRAPHVIZ_FOUND)
 ENDIF()
 
 ##########################################################################
+FIND_PACKAGE(XDot)
+IF(XDot_FOUND)
+    MESSAGE( "-- Found XDot" )
+ENDIF()
+
+##########################################################################
+FIND_PACKAGE(Cog)
+IF(Cog_FOUND)
+    MESSAGE( "-- Found Cog" )
+ENDIF()
+
+##########################################################################
 FIND_PACKAGE(BISON)
 IF(BISON_FOUND)
     MESSAGE( "-- Found Bison" )
@@ -392,6 +404,13 @@ FIND_PACKAGE(ZLIB)
 IF( ZLIB_FOUND )
     message( "-- Found Zlib Version (${ZLIB_VERSION_STRING})" )
 ENDIF()
+
+##########################################################################
+# Find "ThorPP"
+#FIND_PACKAGE(ThorPP)
+#IF( ThorPP_FOUND )
+#    message( "-- Found ThorPP_FOUND" )
+#ENDIF()
 
 ##########################################################################
 # Add build-enable preprocessors to global compilation definition

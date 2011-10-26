@@ -22,23 +22,21 @@
 MACRO(COG_GEN)
 
     # parse the argument options
-    SET(__option_catalogries "OUTPUT;COG_FILE;COMMENT")
+    SET(__option_catalogries "OUTPUT;COG_FILE")
     SET(__temporary_options_variable ${ARGN})
     split_options(__temporary_options_variable "default" __option_catalogries __options_set)
 
     # check if the number of targets specified is wrong
     hashmap(GET __options_set "OUTPUT"   __output)
     hashmap(GET __options_set "COG_FILE" __cog_file)
-    hashmap(GET __options_set "COMMENT"  __comment)
 
     IF(DEFINED __cog_file)
 
         STRING(REGEX REPLACE ".cog" ".h" OUTPUT_SOURCE_RENAMED ${__cog_file})
         add_custom_command(
             OUTPUT ${OUTPUT_SOURCE_RENAMED}
-            COMMAND ${COG_TOOL} -d -o ${OUTPUT_SOURCE_RENAMED} ${__cog_file}
+            COMMAND ${COG_SCRIPT} -d -o ${OUTPUT_SOURCE_RENAMED} ${__cog_file}
             DEPENDS ${__cog_file}
-            COMMENT ${__comment}
             )
         LIST(APPEND ${__output} ${OUTPUT_SOURCE_RENAMED})
 

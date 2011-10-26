@@ -89,7 +89,7 @@ macro(zillians_show_buffer_schema target_name config_file)
         add_custom_target(${target_name}
             # tricky: generate a colored message by using triple back-slash as escape character
             COMMAND ${__location_zillians-buffer-generator} -c ${_config_file} -o ${_dot_file} -d
-            COMMAND ${ZILLIANS_SCRIPT_PATH}/xdot/xdot.py ${_dot_file}
+            COMMAND ${XDOT_SCRIPT} ${_dot_file}
             VERBATIM 
             COMMENT "Generating buffer definition schema preview for ${config_file}"
         )
