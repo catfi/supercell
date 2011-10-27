@@ -19,66 +19,131 @@
 # Contact Information: info@zillians.com
 #
 
-MACRO(THORPP_GEN)
+MACRO(GENERATE_STUB)
+
+    ###################
+    # PARSE ARGUMENTS #
+    ###################
 
     # parse the argument options
-    SET(__option_catalogries "OUTPUT;INPUT;FROM_LANGUAGE;TO_LANGUAGE")
+    SET(__option_catalogries "TARGET;OUTPUT_VARIABLE;INPUT;FROM_LANGUAGE;TO_LANGUAGE")
     SET(__temporary_options_variable ${ARGN})
     split_options(__temporary_options_variable "default" __option_catalogries __options_set)
 
-    # check if the number of targets specified is wrong
-    hashmap(GET __options_set "OUTPUT" __output)
+    # check IF the number of targets specified is wrong
+    hashmap(GET __options_set "TARGET" __target)
+    hashmap(GET __options_set "OUTPUT_VARIABLE" __output_variable)
     hashmap(GET __options_set "INPUT" __input)
     hashmap(GET __options_set "FROM_LANGUAGE" __from_language)
     hashmap(GET __options_set "TO_LANGUAGE" __to_language)
 
-    IF(DEFINED __input)
+    ###################
+    # CHECK ARGUMENTS #
+    ###################
 
-        GET_FILENAME_COMPONENT(__input_name ${__input} NAME)
-        GET_FILENAME_COMPONENT(__input_ext ${__input} EXT)
+    IF(NOT DEFINED __input)
+        MESSAGE(FATAL_ERROR "must specify input!")
+    ENDIF()
 
-        SET(SCRATCH_FILE "${CMAKE_CURRENT_BINARY_DIR}/${__input_name}")
-        STRING(REGEX REPLACE ${__input_ext} "_generated_1.cpp" GEN_SOURCE_1 ${SCRATCH_FILE})
-        STRING(REGEX REPLACE ${__input_ext} "_generated_2.cpp" GEN_SOURCE_2 ${SCRATCH_FILE})
+    IF(NOT EXISTS ${__input})
+        MESSAGE(FATAL_ERROR "input must exist!")
+    ENDIF()
 
+    IF(NOT DEFINED __target AND NOT DEFINED __output_variable)
+        MESSAGE(FATAL_ERROR "must specify either target or output variable!")
+    ENDIF()
+
+    IF(DEFINED __target AND DEFINED __output_variable)
+        MESSAGE(FATAL_ERROR "can't specify both target and output variable!")
+    ENDIF()
+
+    LIST(LENGTH __target __number_of_target)
+    IF(__number_of_target GREATER 1)
+        MESSAGE(FATAL_ERROR "can't declare more than one target!")
+    ENDIF()
+
+    GET_FILENAME_COMPONENT(__input_name ${__input} NAME)
+    GET_FILENAME_COMPONENT(__input_ext ${__input} EXT)
+
+    IF(NOT ${__input_ext} MATCHES "lp")
+        MESSAGE(FATAL_ERROR "unrecognized file extension!")
+    ENDIF()
+
+    ##############
+    # INITIALIZE #
+    ##############
+
+    SET(__build_input "${CMAKE_CURRENT_BINARY_DIR}/${__input_name}")
+    STRING(REGEX REPLACE ${__input_ext} "_generated_1.cpp" gen_source_1 ${__build_input})
+    STRING(REGEX REPLACE ${__input_ext} "_generated_2.cpp" gen_source_2 ${__build_input})
+
+    ###########
+    # DO WORK #
+    ###########
+
+    # copy input to build path (do everything in build path)
+    ADD_CUSTOM_COMMAND(
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${__input} ${__build_input}
+        DEPENDS ${__input}
+        OUTPUT ${__build_input}
+        )
+
+    # generate INTERMEDIATE generator source
+    SET(cmd_string
+        ${THORPP_PROGRAM} --input ${__build_input} --from ${__from_language} --to ${__to_language}
+        )
+    SET(cmd_string
+        ${CMAKE_COMMAND}
+            -D__TEST_PROG="${cmd_string}"
+            -D__OUTPUT_FILE="${gen_source_1}"
+            -P ${ZILLIANS_SCRIPT_PATH}/run_and_pipe_stdout_to_file.cmake
+        )
+    ADD_CUSTOM_COMMAND(
+        COMMAND ${cmd_string}
+        DEPENDS ${__build_input}
+        OUTPUT ${gen_source_1}
+        COMMENT "UsingThorPP.cmake: generating INTERMEDIATE generator ${gen_source_2}"
+        )
+
+    # compile INTERMEDIATE generator
+    ADD_EXECUTABLE(gen_program_1_target ${gen_source_1})
+    GET_TARGET_PROPERTY(gen_program_1 gen_program_1_target LOCATION)
+
+    # generate FINAL generator source
+    SET(cmd_string
+        ${CMAKE_COMMAND}
+            -D__TEST_PROG="${gen_program_1}"
+            -D__OUTPUT_FILE="${gen_source_2}"
+            -P ${ZILLIANS_SCRIPT_PATH}/run_and_pipe_stdout_to_file.cmake
+        )
+    ADD_CUSTOM_COMMAND(
+        COMMAND ${cmd_string}
+        DEPENDS ${gen_program_1}
+        OUTPUT ${gen_source_2}
+        COMMENT "UsingThorPP.cmake: generating FINAL generator ${gen_source_2}"
+        )
+
+    ##################
+    # COLLECT OUTPUT #
+    ##################
+
+    # collect FINAL generator source
+    IF(DEFINED __output_variable)
+        LIST(APPEND ${__output_variable} ${gen_source_2})
+    ENDIF()
+
+    # compile FINAL generator and dump FINAL generator output to stdout (for debugging only!)
+    IF(DEFINED __target)
+        ADD_EXECUTABLE(gen_program_2_target ${gen_source_2})
+        GET_TARGET_PROPERTY(gen_program_2 gen_program_2_target LOCATION)
+
+        ADD_CUSTOM_TARGET(${__target} ALL)
         ADD_CUSTOM_COMMAND(
-            COMMAND ${CMAKE_COMMAND} -E copy ${__input} ${SCRATCH_FILE}
-            DEPENDS ${__input}
-            OUTPUT ${SCRATCH_FILE}
+            TARGET ${__target}
+            COMMAND ${gen_program_2}
+            DEPENDS ${gen_program_2}
+            COMMENT "UsingThorPP.cmake: generating FINAL output"
             )
-
-        set(cmd_string
-            ${THORPP_PROGRAM} --input ${SCRATCH_FILE} --from ${__from_language} --to ${__to_language}
-            )
-        set(cmd_string
-            ${CMAKE_COMMAND}
-                -DCMD_STRING="${cmd_string}"
-                -DWRITE_FILE="${GEN_SOURCE_1}"
-                -P ${ZILLIANS_SCRIPT_PATH}/run_and_pipe_stdout_to_file.cmake
-            )
-        add_custom_command(
-            COMMAND ${cmd_string}
-            DEPENDS ${SCRATCH_FILE}
-            OUTPUT ${GEN_SOURCE_1}
-            )
-
-        ADD_EXECUTABLE(GEN_PROGRAM_TARGET ${GEN_SOURCE_1})
-        GET_TARGET_PROPERTY(GEN_PROGRAM GEN_PROGRAM_TARGET LOCATION)
-
-        set(cmd_string
-            ${CMAKE_COMMAND}
-                -DCMD_STRING="${GEN_PROGRAM}"
-                -DWRITE_FILE="${GEN_SOURCE_2}"
-                -P ${ZILLIANS_SCRIPT_PATH}/run_and_pipe_stdout_to_file.cmake
-            )
-        add_custom_command(
-            COMMAND ${cmd_string}
-            DEPENDS ${GEN_SOURCE_1}
-            OUTPUT ${GEN_SOURCE_2}
-            )
-
-        LIST(APPEND ${__output} ${GEN_SOURCE_2})
-
     ENDIF()
 
 ENDMACRO()

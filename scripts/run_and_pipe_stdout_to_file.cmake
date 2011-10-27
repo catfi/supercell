@@ -19,9 +19,10 @@
 # Contact Information: info@zillians.com
 #
 
-string(REPLACE " " ";" CMD_STRING ${CMD_STRING})
+# convert shell command from "string" to "list" so EXECUTE_PROCESS parses arguments correctly
+STRING(REPLACE " " ";" __TEST_PROG_LIST ${__TEST_PROG})
 
 EXECUTE_PROCESS(
-    COMMAND ${CMD_STRING}
-    OUTPUT_FILE ${WRITE_FILE}
+    COMMAND ${__TEST_PROG_LIST}
+    OUTPUT_FILE ${__OUTPUT_FILE}
     )
