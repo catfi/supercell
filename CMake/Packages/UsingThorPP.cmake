@@ -19,7 +19,7 @@
 # Contact Information: info@zillians.com
 #
 
-SET(THORPP_LEGAL_EXT ".lp")
+SET(THORPP_EXTENSION ".lp")
 
 MACRO(GENERATE_STUB)
 
@@ -70,7 +70,7 @@ MACRO(GENERATE_STUB)
         GET_FILENAME_COMPONENT(__input_name ${__input} NAME)
         GET_FILENAME_COMPONENT(__input_ext ${__input} EXT)
 
-        IF(NOT ${__input_ext} STREQUAL ${THORPP_LEGAL_EXT})
+        IF(NOT ${__input_ext} STREQUAL ${THORPP_EXTENSION})
             MESSAGE(FATAL_ERROR "unrecognized file extension!")
         ENDIF()
 
@@ -79,8 +79,8 @@ MACRO(GENERATE_STUB)
         ENDIF()
 
         SET(__input_stem "${__gen_path}/${__input_name}") # do everything in code-gen path
-        STRING(REGEX REPLACE ${__input_ext} "_generated_1.cpp"               gen_source_1 ${__input_stem})
-        STRING(REGEX REPLACE ${__input_ext} "_generated_2${__gen_extension}" gen_source_2 ${__input_stem})
+        STRING(REGEX REPLACE ${__input_ext} "_generated_1.cpp"   gen_source_1 ${__input_stem})
+        STRING(REGEX REPLACE ${__input_ext} "${__gen_extension}" gen_source_2 ${__input_stem})
 
         ###########
         # DO WORK #
