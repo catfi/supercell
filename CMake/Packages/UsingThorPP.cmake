@@ -19,7 +19,7 @@
 # Contact Information: info@zillians.com
 #
 
-SET(THORPP_LEGAL_EXT "lp")
+SET(THORPP_LEGAL_EXT ".lp")
 
 MACRO(GENERATE_STUB)
 
@@ -28,13 +28,15 @@ MACRO(GENERATE_STUB)
     ###################
 
     # parse the argument options
-    SET(__option_catalogries "OUTPUT_VARIABLE;INPUT;FROM_LANGUAGE;TO_LANGUAGE")
+    SET(__option_catalogries "OUTPUT_VARIABLE;INPUT;GEN_PATH;GEN_EXTENSION;FROM_LANGUAGE;TO_LANGUAGE")
     SET(__temporary_options_variable ${ARGN})
     split_options(__temporary_options_variable "default" __option_catalogries __options_set)
 
     # check IF the number of targets specified is wrong
     hashmap(GET __options_set "OUTPUT_VARIABLE" __output_variable)
     hashmap(GET __options_set "INPUT"           __input_list)
+    hashmap(GET __options_set "GEN_PATH"        __gen_path)
+    hashmap(GET __options_set "GEN_EXTENSION"   __gen_extension)
     hashmap(GET __options_set "FROM_LANGUAGE"   __from_language)
     hashmap(GET __options_set "TO_LANGUAGE"     __to_language)
 
@@ -50,6 +52,15 @@ MACRO(GENERATE_STUB)
         MESSAGE(FATAL_ERROR "must specify output variable!")
     ENDIF()
 
+    IF(NOT DEFINED __gen_path)
+        MESSAGE(STATUS "no code-gen path specified -- generating to build path")
+        SET(__gen_path "${CMAKE_CURRENT_BINARY_DIR}")
+    ENDIF()
+
+    IF(NOT DEFINED __gen_extension)
+        MESSAGE(STATUS "no code-gen extension specified -- generating without extension")
+    ENDIF()
+
     FOREACH(__input ${__input_list})
 
         ##############
@@ -59,32 +70,25 @@ MACRO(GENERATE_STUB)
         GET_FILENAME_COMPONENT(__input_name ${__input} NAME)
         GET_FILENAME_COMPONENT(__input_ext ${__input} EXT)
 
-        IF(NOT ${__input_ext} MATCHES ${THORPP_LEGAL_EXT})
+        IF(NOT ${__input_ext} STREQUAL ${THORPP_LEGAL_EXT})
             MESSAGE(FATAL_ERROR "unrecognized file extension!")
         ENDIF()
 
         IF(NOT EXISTS ${__input})
-            MESSAGE(FATAL_ERROR "input must exist!")
+            MESSAGE(FATAL_ERROR "file must exist!")
         ENDIF()
 
-        SET(__build_input "${CMAKE_CURRENT_BINARY_DIR}/${__input_name}")
-        STRING(REGEX REPLACE ${__input_ext} "_generated_1.cpp" gen_source_1 ${__build_input})
-        STRING(REGEX REPLACE ${__input_ext} "_generated_2.cpp" gen_source_2 ${__build_input})
+        SET(__input_stem "${__gen_path}/${__input_name}") # do everything in code-gen path
+        STRING(REGEX REPLACE ${__input_ext} "_generated_1.cpp"               gen_source_1 ${__input_stem})
+        STRING(REGEX REPLACE ${__input_ext} "_generated_2${__gen_extension}" gen_source_2 ${__input_stem})
 
         ###########
         # DO WORK #
         ###########
 
-        # copy input to build path (do everything in build path)
-        ADD_CUSTOM_COMMAND(
-            DEPENDS ${__input}
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${__input} ${__build_input}
-            OUTPUT ${__build_input}
-            )
-
         # generate INTERMEDIATE generator source
         SET(cmd_string
-            ${THORPP_PROGRAM} --input ${__build_input} --from ${__from_language} --to ${__to_language}
+            ${THORPP_PROGRAM} --input ${__input} --from ${__from_language} --to ${__to_language}
             )
         SET(cmd_string
             ${CMAKE_COMMAND}
@@ -93,15 +97,15 @@ MACRO(GENERATE_STUB)
                 -P ${ZILLIANS_SCRIPT_PATH}/run_and_pipe_stdout_to_file.cmake
             )
         ADD_CUSTOM_COMMAND(
-            DEPENDS ${__build_input}
+            DEPENDS ${__input}
             COMMAND ${cmd_string}
             OUTPUT ${gen_source_1}
             COMMENT "UsingThorPP.cmake: generating INTERMEDIATE generator ${gen_source_2}"
             )
 
         # compile INTERMEDIATE generator
-        ADD_EXECUTABLE(gen_program_1_target-${__input_name} ${gen_source_1})
-        GET_TARGET_PROPERTY(gen_program_1 gen_program_1_target-${__input_name} LOCATION)
+        ADD_EXECUTABLE(gen_program_1_target_${__input_name} ${gen_source_1})
+        GET_TARGET_PROPERTY(gen_program_1 gen_program_1_target_${__input_name} LOCATION)
 
         # generate FINAL generator source
         SET(cmd_string
@@ -113,9 +117,10 @@ MACRO(GENERATE_STUB)
         ADD_CUSTOM_COMMAND(
             DEPENDS ${gen_program_1}
             COMMAND ${cmd_string}
-            COMMAND ${ZILLIANS_SCRIPT_PATH}/format_source.sh ${gen_source_2}
+            COMMAND ${ZILLIANS_SCRIPT_PATH}/format_source.sh ${gen_source_2}    # BEAUTIFY OUTPUT
+            COMMAND ${CMAKE_COMMAND} -E remove ${gen_program_1} ${gen_source_1} # CLEANUP
             OUTPUT ${gen_source_2}
-            COMMENT "UsingThorPP.cmake: generating FINAL generator ${gen_source_2}"
+            COMMENT "UsingThorPP.cmake: generating FINAL text ${gen_source_2}"
             )
 
         ##################
