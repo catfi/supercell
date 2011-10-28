@@ -20,23 +20,9 @@
 #
 
 # convert shell command from "string" to "list" so EXECUTE_PROCESS parses arguments correctly
-string(REPLACE " " ";" TEST_PROG ${TEST_PROG})
+STRING(REPLACE " " ";" __TEST_PROG_LIST ${__TEST_PROG})
 
-execute_process(
-    COMMAND ${TEST_PROG}
-    RESULT_VARIABLE __exit_code
+EXECUTE_PROCESS(
+    COMMAND ${__TEST_PROG_LIST}
+    OUTPUT_FILE ${__OUTPUT_FILE}
     )
-
-if(EXPECT_FAIL)
-    if(__exit_code)
-        message(STATUS "success! (run.cmake) -- expect fail and exit code nonzero")
-    else()
-        message(FATAL_ERROR "fail! (run.cmake) -- expect fail but exit code zero")
-    endif()
-else()
-    if(NOT __exit_code)
-        message(STATUS "success! (run.cmake) -- exit code zero")
-    else()
-        message(FATAL_ERROR "fail! (run.cmake) -- exit code == " ${__exit_code})
-    endif()
-endif()

@@ -313,7 +313,6 @@ SET( ZCC_BC "${CMAKE_SOURCE_DIR}/bin/zcc-bc" CACHE STRING "ZCC_BC Specific ")
 SET( ZILLIANS_LLC   "${CMAKE_SOURCE_DIR}/bin/zillians-llc" CACHE STRING "zillians llc specific ")
 SET( ZILLIANS_LD    "${CMAKE_SOURCE_DIR}/bin/zillians-ld" CACHE STRING "zillians ld specific ")
 SET( ZCC_STUB_DISPATCH "${CMAKE_SOURCE_DIR}/bin/zillians-stub-gen" CACHE STRING "ZCC_STUB_DISPATCH Specific ")
-SET( COG_TOOL "cog.py" CACHE STRING "Python Cog Specific ")
 
 SET( ZCC_LIT_TEST_REPEAT "1" CACHE STRING "Zcc+Lit Test suite repleat time")
 SET( LIT_OPTIONS	-v --shuffle)
