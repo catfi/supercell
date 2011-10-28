@@ -4,7 +4,7 @@
 # XDOT_SCRIPT - system has XDOT
 
 IF(NOT WIN32)
-    FIND_PATH(XDOT_SCRIPT "xdot.py" PATHS
+    FIND_PROGRAM(XDOT_SCRIPT "xdot.py" PATHS
         /usr/local/bin
         )
 ENDIF()
