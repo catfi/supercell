@@ -180,9 +180,6 @@ macro(zillians_add_complex_test)
         set( cmd_string ${cmd_string} ${cmd} )
     endforeach( cmd )
     
-    # get the target location
-    get_target_property(__location_${__target} ${__target} LOCATION)
-    
     # create test targets and set dependencies
     add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG="${__shell}" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
     if( __expect_fail )
