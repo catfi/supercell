@@ -62,7 +62,9 @@ MACRO(GENERATE_STUB)
         MESSAGE(STATUS "no code-gen extension specified -- generating without extension!")
     ENDIF()
 
-    ADD_CUSTOM_TARGET(${__target}) # root target
+    IF(DEFINED __target)
+        ADD_CUSTOM_TARGET(${__target}) # root target
+    ENDIF()
 
     FOREACH(__input ${__input_list})
 
