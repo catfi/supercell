@@ -28,11 +28,12 @@ MACRO(GENERATE_STUB)
     ###################
 
     # parse the argument options
-    SET(__option_catalogries "OUTPUT_VARIABLE;INPUT;GEN_PATH;GEN_EXTENSION;FROM_LANGUAGE;TO_LANGUAGE")
+    SET(__option_catalogries "TARGET;OUTPUT_VARIABLE;INPUT;GEN_PATH;GEN_EXTENSION;FROM_LANGUAGE;TO_LANGUAGE")
     SET(__temporary_options_variable ${ARGN})
     split_options(__temporary_options_variable "default" __option_catalogries __options_set)
 
     # check IF the number of targets specified is wrong
+    hashmap(GET __options_set "TARGET"          __target)
     hashmap(GET __options_set "OUTPUT_VARIABLE" __output_variable)
     hashmap(GET __options_set "INPUT"           __input_list)
     hashmap(GET __options_set "GEN_PATH"        __gen_path)
@@ -48,18 +49,20 @@ MACRO(GENERATE_STUB)
         MESSAGE(FATAL_ERROR "must specify input!")
     ENDIF()
 
-    IF(NOT DEFINED __output_variable)
-        MESSAGE(FATAL_ERROR "must specify output variable!")
+    IF(NOT DEFINED __target AND NOT DEFINED __output_variable)
+        MESSAGE(FATAL_ERROR "must specify either target or output variable!")
     ENDIF()
 
     IF(NOT DEFINED __gen_path)
-        MESSAGE(STATUS "no code-gen path specified -- generating to build path")
+        MESSAGE(STATUS "no code-gen path specified -- generating to build path!")
         SET(__gen_path "${CMAKE_CURRENT_BINARY_DIR}")
     ENDIF()
 
     IF(NOT DEFINED __gen_extension)
-        MESSAGE(STATUS "no code-gen extension specified -- generating without extension")
+        MESSAGE(STATUS "no code-gen extension specified -- generating without extension!")
     ENDIF()
+
+    ADD_CUSTOM_TARGET(${__target}) # root target
 
     FOREACH(__input ${__input_list})
 
@@ -114,22 +117,27 @@ MACRO(GENERATE_STUB)
                 -D__OUTPUT_FILE="${gen_source_2}"
                 -P ${ZILLIANS_SCRIPT_PATH}/run_and_pipe_stdout_to_file.cmake
             )
-        ADD_CUSTOM_COMMAND(
-            DEPENDS ${gen_program_1}
-            COMMAND ${cmd_string}
-            COMMAND ${ZILLIANS_SCRIPT_PATH}/format_source.sh ${gen_source_2}    # BEAUTIFY OUTPUT
-            COMMAND ${CMAKE_COMMAND} -E remove ${gen_program_1} ${gen_source_1} # CLEANUP
-            OUTPUT ${gen_source_2}
-            COMMENT "UsingThorPP.cmake: generating FINAL text ${gen_source_2}"
-            )
-
-        ##################
-        # COLLECT OUTPUT #
-        ##################
-
-        # collect FINAL generator source
-        IF(DEFINED __output_variable)
-            LIST(APPEND ${__output_variable} ${gen_source_2})
+        IF(DEFINED __target)
+            ADD_CUSTOM_TARGET(${__target}_${__input_name}
+                DEPENDS ${gen_program_1}
+                COMMAND ${cmd_string}
+                COMMAND ${ZILLIANS_SCRIPT_PATH}/format_source.sh ${gen_source_2}    # BEAUTIFY OUTPUT
+                COMMAND ${CMAKE_COMMAND} -E remove ${gen_program_1} ${gen_source_1} # CLEANUP
+                COMMENT "UsingThorPP.cmake: generating FINAL text ${gen_source_2}"
+                ) # erect sub-target
+            ADD_DEPENDENCIES(${__target} ${__target}_${__input_name}) # attach sub-target to root target
+        ELSE()
+            IF(DEFINED __output_variable)
+                ADD_CUSTOM_COMMAND(
+                    DEPENDS ${gen_program_1}
+                    COMMAND ${cmd_string}
+                    COMMAND ${ZILLIANS_SCRIPT_PATH}/format_source.sh ${gen_source_2}    # BEAUTIFY OUTPUT
+                    COMMAND ${CMAKE_COMMAND} -E remove ${gen_program_1} ${gen_source_1} # CLEANUP
+                    OUTPUT ${gen_source_2}
+                    COMMENT "UsingThorPP.cmake: generating FINAL text ${gen_source_2}"
+                    )
+                LIST(APPEND ${__output_variable} ${gen_source_2}) # collect FINAL generator source
+            ENDIF()
         ENDIF()
 
     ENDFOREACH(__input)
