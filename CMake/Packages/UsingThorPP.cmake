@@ -21,14 +21,14 @@
 
 SET(THORPP_EXTENSION ".lp")
 
-MACRO(GENERATE_STUB)
+MACRO(THORPP_GEN)
 
     ###################
     # PARSE ARGUMENTS #
     ###################
 
     # parse the argument options
-    SET(__option_catalogries "TARGET;OUTPUT_VARIABLE;INPUT;GEN_PATH;GEN_EXTENSION;FROM_LANGUAGE;TO_LANGUAGE")
+    SET(__option_catalogries "TARGET;OUTPUT_VARIABLE;INPUT;OUTPUT_PATH;OUTPUT_EXT")
     SET(__temporary_options_variable ${ARGN})
     split_options(__temporary_options_variable "default" __option_catalogries __options_set)
 
@@ -36,10 +36,8 @@ MACRO(GENERATE_STUB)
     hashmap(GET __options_set "TARGET"          __target)
     hashmap(GET __options_set "OUTPUT_VARIABLE" __output_variable)
     hashmap(GET __options_set "INPUT"           __input_list)
-    hashmap(GET __options_set "GEN_PATH"        __gen_path)
-    hashmap(GET __options_set "GEN_EXTENSION"   __gen_extension)
-    hashmap(GET __options_set "FROM_LANGUAGE"   __from_language)
-    hashmap(GET __options_set "TO_LANGUAGE"     __to_language)
+    hashmap(GET __options_set "OUTPUT_PATH"     __output_path)
+    hashmap(GET __options_set "OUTPUT_EXT"      __output_ext)
 
     ###################
     # CHECK ARGUMENTS #
@@ -53,12 +51,12 @@ MACRO(GENERATE_STUB)
         MESSAGE(FATAL_ERROR "must specify either target or output variable!")
     ENDIF()
 
-    IF(NOT DEFINED __gen_path)
+    IF(NOT DEFINED __output_path)
         MESSAGE(STATUS "no code-gen path specified -- generating to build path!")
-        SET(__gen_path "${CMAKE_CURRENT_BINARY_DIR}")
+        SET(__output_path "${CMAKE_CURRENT_BINARY_DIR}")
     ENDIF()
 
-    IF(NOT DEFINED __gen_extension)
+    IF(NOT DEFINED __output_ext)
         MESSAGE(STATUS "no code-gen extension specified -- generating without extension!")
     ENDIF()
 
@@ -76,16 +74,16 @@ MACRO(GENERATE_STUB)
         GET_FILENAME_COMPONENT(__input_ext ${__input} EXT)
 
         IF(NOT ${__input_ext} STREQUAL ${THORPP_EXTENSION})
-            MESSAGE(FATAL_ERROR "unrecognized file extension!")
+            MESSAGE(FATAL_ERROR "unrecognized file extension! ${__input_ext}")
         ENDIF()
 
         IF(NOT EXISTS ${__input})
             MESSAGE(FATAL_ERROR "file must exist!")
         ENDIF()
 
-        SET(__input_stem "${__gen_path}/${__input_name}") # do everything in code-gen path
-        STRING(REGEX REPLACE ${__input_ext} "_generated_1.cpp"   gen_source_1 ${__input_stem})
-        STRING(REGEX REPLACE ${__input_ext} "${__gen_extension}" gen_source_2 ${__input_stem})
+        SET(__input_stem "${__output_path}/${__input_name}") # do everything in code-gen path
+        STRING(REGEX REPLACE ${__input_ext} "_generated_1.cpp" gen_source_1 ${__input_stem})
+        STRING(REGEX REPLACE ${__input_ext} "${__output_ext}" gen_source_2 ${__input_stem})
 
         ###########
         # DO WORK #
@@ -93,7 +91,7 @@ MACRO(GENERATE_STUB)
 
         # generate INTERMEDIATE generator source
         SET(cmd_string
-            ${THORPP_PROGRAM} --input ${__input} --from ${__from_language} --to ${__to_language}
+            ${THORPP_PROGRAM} --input ${__input} --from cpp --to cpp
             )
         SET(cmd_string
             ${CMAKE_COMMAND}
