@@ -19,6 +19,11 @@
 # Contact Information: info@zillians.com
 #
 
+INCLUDE_DIRECTORIES(
+    ${PROJECT_COMMON_SOURCE_DIR}/include/
+    ${PROJECT_FRAMEWORK_SOURCE_DIR}/include/
+    )
+
 SET(THORPP_EXTENSION ".lp")
 
 MACRO(THORPP_GEN)
@@ -52,12 +57,12 @@ MACRO(THORPP_GEN)
     ENDIF()
 
     IF(NOT DEFINED __output_path)
-        MESSAGE(STATUS "no code-gen path specified -- generating to build path!")
+        MESSAGE(STATUS "no output path specified -- generating to build path!")
         SET(__output_path "${CMAKE_CURRENT_BINARY_DIR}")
     ENDIF()
 
     IF(NOT DEFINED __output_ext)
-        MESSAGE(STATUS "no code-gen extension specified -- generating without extension!")
+        MESSAGE(STATUS "no output extension specified -- generating without extension!")
     ENDIF()
 
     IF(DEFINED __target)
@@ -81,8 +86,8 @@ MACRO(THORPP_GEN)
             MESSAGE(FATAL_ERROR "file must exist!")
         ENDIF()
 
-        SET(__input_stem "${__output_path}/${__input_name}") # do everything in code-gen path
-        STRING(REGEX REPLACE ${__input_ext} "_generated_1.cpp" gen_source_1 ${__input_stem})
+        SET(__input_stem "${__output_path}/${__input_name}") # do everything in output path
+        STRING(REGEX REPLACE ${__input_ext} "_intermediate.cpp" gen_source_1 ${__input_stem})
         STRING(REGEX REPLACE ${__input_ext} "${__output_ext}" gen_source_2 ${__input_stem})
 
         ###########
