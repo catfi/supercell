@@ -19,26 +19,26 @@
 # Contact Information: info@zillians.com
 #
 
-MACRO(COG_GEN)
+MACRO(zillians_add_cog_gen)
 
     # parse the argument options
-    SET(__option_catalogries "OUTPUT;COG_FILE")
+    SET(__option_catalogries "OUTPUT_VARIABLE;INPUT")
     SET(__temporary_options_variable ${ARGN})
     split_options(__temporary_options_variable "default" __option_catalogries __options_set)
 
     # check if the number of targets specified is wrong
-    hashmap(GET __options_set "OUTPUT"   __output)
-    hashmap(GET __options_set "COG_FILE" __cog_file)
+    hashmap(GET __options_set "OUTPUT_VARIABLE" __output_variable)
+    hashmap(GET __options_set "INPUT" __input)
 
-    IF(DEFINED __cog_file)
+    IF(DEFINED __input)
 
-        STRING(REGEX REPLACE ".cog" ".h" OUTPUT_SOURCE_RENAMED ${__cog_file})
+        STRING(REGEX REPLACE ".cog" ".h" OUTPUT_SOURCE_RENAMED ${__input})
         add_custom_command(
             OUTPUT ${OUTPUT_SOURCE_RENAMED}
-            COMMAND ${COG_SCRIPT} -d -o ${OUTPUT_SOURCE_RENAMED} ${__cog_file}
-            DEPENDS ${__cog_file}
+            COMMAND ${COG_SCRIPT} -d -o ${OUTPUT_SOURCE_RENAMED} ${__input}
+            DEPENDS ${__input}
             )
-        LIST(APPEND ${__output} ${OUTPUT_SOURCE_RENAMED})
+        LIST(APPEND ${__output_variable} ${OUTPUT_SOURCE_RENAMED})
 
     ENDIF()
 
