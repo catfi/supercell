@@ -19,16 +19,21 @@
 # Contact Information: info@zillians.com
 #
 
+INCLUDE_DIRECTORIES(
+    ${PROJECT_COMMON_SOURCE_DIR}/include/
+    ${PROJECT_FRAMEWORK_SOURCE_DIR}/include/
+    )
+
 SET(THORPP_EXTENSION ".lp")
 
-MACRO(GENERATE_STUB)
+MACRO(zillians_add_thorpp_gen)
 
     ###################
     # PARSE ARGUMENTS #
     ###################
 
     # parse the argument options
-    SET(__option_catalogries "TARGET;OUTPUT_VARIABLE;INPUT;GEN_PATH;GEN_EXTENSION;FROM_LANGUAGE;TO_LANGUAGE")
+    SET(__option_catalogries "TARGET;OUTPUT_VARIABLE;INPUT;OUTPUT_PATH;OUTPUT_EXT")
     SET(__temporary_options_variable ${ARGN})
     split_options(__temporary_options_variable "default" __option_catalogries __options_set)
 
@@ -36,10 +41,8 @@ MACRO(GENERATE_STUB)
     hashmap(GET __options_set "TARGET"          __target)
     hashmap(GET __options_set "OUTPUT_VARIABLE" __output_variable)
     hashmap(GET __options_set "INPUT"           __input_list)
-    hashmap(GET __options_set "GEN_PATH"        __gen_path)
-    hashmap(GET __options_set "GEN_EXTENSION"   __gen_extension)
-    hashmap(GET __options_set "FROM_LANGUAGE"   __from_language)
-    hashmap(GET __options_set "TO_LANGUAGE"     __to_language)
+    hashmap(GET __options_set "OUTPUT_PATH"     __output_path)
+    hashmap(GET __options_set "OUTPUT_EXT"      __output_ext)
 
     ###################
     # CHECK ARGUMENTS #
@@ -53,13 +56,13 @@ MACRO(GENERATE_STUB)
         MESSAGE(FATAL_ERROR "must specify either target or output variable!")
     ENDIF()
 
-    IF(NOT DEFINED __gen_path)
-        MESSAGE(STATUS "no code-gen path specified -- generating to build path!")
-        SET(__gen_path "${CMAKE_CURRENT_BINARY_DIR}")
+    IF(NOT DEFINED __output_path)
+        MESSAGE(STATUS "no output path specified -- generating to build path!")
+        SET(__output_path "${CMAKE_CURRENT_BINARY_DIR}")
     ENDIF()
 
-    IF(NOT DEFINED __gen_extension)
-        MESSAGE(STATUS "no code-gen extension specified -- generating without extension!")
+    IF(NOT DEFINED __output_ext)
+        MESSAGE(STATUS "no output extension specified -- generating without extension!")
     ENDIF()
 
     IF(DEFINED __target)
@@ -76,16 +79,118 @@ MACRO(GENERATE_STUB)
         GET_FILENAME_COMPONENT(__input_ext ${__input} EXT)
 
         IF(NOT ${__input_ext} STREQUAL ${THORPP_EXTENSION})
-            MESSAGE(FATAL_ERROR "unrecognized file extension!")
+            MESSAGE(FATAL_ERROR "unrecognized file extension! ${__input_ext}")
         ENDIF()
 
         IF(NOT EXISTS ${__input})
             MESSAGE(FATAL_ERROR "file must exist!")
         ENDIF()
 
-        SET(__input_stem "${__gen_path}/${__input_name}") # do everything in code-gen path
-        STRING(REGEX REPLACE ${__input_ext} "_generated_1.cpp"   gen_source_1 ${__input_stem})
-        STRING(REGEX REPLACE ${__input_ext} "${__gen_extension}" gen_source_2 ${__input_stem})
+        SET(__input_stem "${__output_path}/${__input_name}") # do everything in output path
+        STRING(REGEX REPLACE ${__input_ext} "${__output_ext}" gen_source_1 ${__input_stem})
+
+        ###########
+        # DO WORK #
+        ###########
+
+        # generate FINAL generator source
+        SET(cmd_string
+            ${THORPP_PROGRAM} --input ${__input} --from cpp --to cpp
+            )
+        SET(cmd_string
+            ${CMAKE_COMMAND}
+                -D__TEST_PROG="${cmd_string}"
+                -D__OUTPUT_FILE="${gen_source_1}"
+                -P ${ZILLIANS_SCRIPT_PATH}/run_and_pipe_stdout_to_file.cmake
+            )
+        IF(DEFINED __target)
+            ADD_CUSTOM_TARGET(${__target}_${__input_name}
+                DEPENDS ${__input}
+                COMMAND ${cmd_string}
+                COMMAND ${ZILLIANS_SCRIPT_PATH}/format_source.sh ${gen_source_1} # BEAUTIFY OUTPUT
+                COMMENT "UsingThorPP.cmake: generating FINAL output ${gen_source_1}"
+                ) # erect sub-target
+            ADD_DEPENDENCIES(${__target} ${__target}_${__input_name}) # attach sub-target to root target
+        ELSE()
+            IF(DEFINED __output_variable)
+                ADD_CUSTOM_COMMAND(
+                    DEPENDS ${__input}
+                    COMMAND ${cmd_string}
+                    COMMAND ${ZILLIANS_SCRIPT_PATH}/format_source.sh ${gen_source_1} # BEAUTIFY OUTPUT
+                    OUTPUT ${gen_source_1}
+                    COMMENT "UsingThorPP.cmake: generating FINAL output ${gen_source_1}"
+                    )
+                LIST(APPEND ${__output_variable} ${gen_source_1}) # collect FINAL generator output
+            ENDIF()
+        ENDIF()
+
+    ENDFOREACH(__input)
+
+ENDMACRO()
+
+MACRO(zillians_add_two_pass_thorpp_gen)
+
+    ###################
+    # PARSE ARGUMENTS #
+    ###################
+
+    # parse the argument options
+    SET(__option_catalogries "TARGET;OUTPUT_VARIABLE;INPUT;OUTPUT_PATH;OUTPUT_EXT")
+    SET(__temporary_options_variable ${ARGN})
+    split_options(__temporary_options_variable "default" __option_catalogries __options_set)
+
+    # check IF the number of targets specified is wrong
+    hashmap(GET __options_set "TARGET"          __target)
+    hashmap(GET __options_set "OUTPUT_VARIABLE" __output_variable)
+    hashmap(GET __options_set "INPUT"           __input_list)
+    hashmap(GET __options_set "OUTPUT_PATH"     __output_path)
+    hashmap(GET __options_set "OUTPUT_EXT"      __output_ext)
+
+    ###################
+    # CHECK ARGUMENTS #
+    ###################
+
+    IF(NOT DEFINED __input_list)
+        MESSAGE(FATAL_ERROR "must specify input!")
+    ENDIF()
+
+    IF(NOT DEFINED __target AND NOT DEFINED __output_variable)
+        MESSAGE(FATAL_ERROR "must specify either target or output variable!")
+    ENDIF()
+
+    IF(NOT DEFINED __output_path)
+        MESSAGE(STATUS "no output path specified -- generating to build path!")
+        SET(__output_path "${CMAKE_CURRENT_BINARY_DIR}")
+    ENDIF()
+
+    IF(NOT DEFINED __output_ext)
+        MESSAGE(STATUS "no output extension specified -- generating without extension!")
+    ENDIF()
+
+    IF(DEFINED __target)
+        ADD_CUSTOM_TARGET(${__target}) # root target
+    ENDIF()
+
+    FOREACH(__input ${__input_list})
+
+        ##############
+        # INITIALIZE #
+        ##############
+
+        GET_FILENAME_COMPONENT(__input_name ${__input} NAME)
+        GET_FILENAME_COMPONENT(__input_ext ${__input} EXT)
+
+        IF(NOT ${__input_ext} STREQUAL ${THORPP_EXTENSION})
+            MESSAGE(FATAL_ERROR "unrecognized file extension! ${__input_ext}")
+        ENDIF()
+
+        IF(NOT EXISTS ${__input})
+            MESSAGE(FATAL_ERROR "file must exist!")
+        ENDIF()
+
+        SET(__input_stem "${__output_path}/${__input_name}") # do everything in output path
+        STRING(REGEX REPLACE ${__input_ext} "_intermediate.cpp" gen_source_1 ${__input_stem})
+        STRING(REGEX REPLACE ${__input_ext} "${__output_ext}" gen_source_2 ${__input_stem})
 
         ###########
         # DO WORK #
@@ -93,7 +198,7 @@ MACRO(GENERATE_STUB)
 
         # generate INTERMEDIATE generator source
         SET(cmd_string
-            ${THORPP_PROGRAM} --input ${__input} --from ${__from_language} --to ${__to_language}
+            ${THORPP_PROGRAM} --input ${__input} --from cpp --to cpp
             )
         SET(cmd_string
             ${CMAKE_COMMAND}
@@ -104,6 +209,7 @@ MACRO(GENERATE_STUB)
         ADD_CUSTOM_COMMAND(
             DEPENDS ${__input}
             COMMAND ${cmd_string}
+            COMMAND ${ZILLIANS_SCRIPT_PATH}/format_source.sh ${gen_source_1} # BEAUTIFY OUTPUT
             OUTPUT ${gen_source_1}
             COMMENT "UsingThorPP.cmake: generating INTERMEDIATE generator ${gen_source_2}"
             )
@@ -125,7 +231,7 @@ MACRO(GENERATE_STUB)
                 COMMAND ${cmd_string}
                 COMMAND ${ZILLIANS_SCRIPT_PATH}/format_source.sh ${gen_source_2}    # BEAUTIFY OUTPUT
                 COMMAND ${CMAKE_COMMAND} -E remove ${gen_program_1} ${gen_source_1} # CLEANUP
-                COMMENT "UsingThorPP.cmake: generating FINAL text ${gen_source_2}"
+                COMMENT "UsingThorPP.cmake: generating FINAL output ${gen_source_2}"
                 ) # erect sub-target
             ADD_DEPENDENCIES(${__target} ${__target}_${__input_name}) # attach sub-target to root target
         ELSE()
@@ -136,9 +242,9 @@ MACRO(GENERATE_STUB)
                     COMMAND ${ZILLIANS_SCRIPT_PATH}/format_source.sh ${gen_source_2}    # BEAUTIFY OUTPUT
                     COMMAND ${CMAKE_COMMAND} -E remove ${gen_program_1} ${gen_source_1} # CLEANUP
                     OUTPUT ${gen_source_2}
-                    COMMENT "UsingThorPP.cmake: generating FINAL text ${gen_source_2}"
+                    COMMENT "UsingThorPP.cmake: generating FINAL output ${gen_source_2}"
                     )
-                LIST(APPEND ${__output_variable} ${gen_source_2}) # collect FINAL generator source
+                LIST(APPEND ${__output_variable} ${gen_source_2}) # collect FINAL generator output
             ENDIF()
         ENDIF()
 
