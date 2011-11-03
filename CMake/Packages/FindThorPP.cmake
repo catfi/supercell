@@ -5,6 +5,7 @@
 
 IF(NOT WIN32)
     FIND_PROGRAM(THORPP_PROGRAM "thorpp" PATHS
+        /usr/bin
         /usr/local/bin
         )
 ENDIF()
