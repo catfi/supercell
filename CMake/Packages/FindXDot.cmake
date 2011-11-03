@@ -5,6 +5,7 @@
 
 IF(NOT WIN32)
     FIND_PROGRAM(XDOT_SCRIPT "xdot.py" PATHS
+        /usr/bin
         /usr/local/bin
         )
 ENDIF()

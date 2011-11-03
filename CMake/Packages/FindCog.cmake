@@ -5,6 +5,7 @@
 
 IF(NOT WIN32)
     FIND_PROGRAM(COG_SCRIPT "cog.py" PATHS
+        /usr/bin
         /usr/local/bin
         )
 ENDIF()
