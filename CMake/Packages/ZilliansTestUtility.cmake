@@ -145,8 +145,8 @@ macro(zillians_add_simple_test)
     get_target_property(__location_${__target} ${__target} LOCATION)
     
     # create test targets and set dependencies
-    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
-    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
+    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
+    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
     add_dependencies(check runtest-${__target})
 
 endmacro()
@@ -181,11 +181,11 @@ macro(zillians_add_complex_test)
     endforeach( cmd )
     
     # create test targets and set dependencies
-    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG="${__shell}" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
+    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING="${__shell}" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
     if( __expect_fail )
-        set( cmd_string ${CMAKE_COMMAND} -DTEST_PROG="${cmd_string}" -DEXPECT_FAIL="TRUE" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake )
+        set( cmd_string ${CMAKE_COMMAND} -DTEST_PROG:STRING="${cmd_string}" -DEXPECT_FAIL="TRUE" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake )
     else()
-        set( cmd_string ${CMAKE_COMMAND} -DTEST_PROG="${cmd_string}" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake )
+        set( cmd_string ${CMAKE_COMMAND} -DTEST_PROG:STRING="${cmd_string}" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake )
     endif()
     if( __number_of_depends EQUAL 0 )
         add_custom_target(runtest-${__target} COMMAND ${cmd_string} )
@@ -228,8 +228,8 @@ macro(zillians_add_regex_match_output_test)
     get_target_property(__location_${__target} ${__target} LOCATION)
     
     # create test targets and set dependencies
-    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -DPATTERN=${__pattern} -DMATCH_MODE=${__mode} -P ${ZILLIANS_SCRIPT_PATH}/run_and_match.cmake)
-    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -DPATTERN=${__pattern} -DMATCH_TYPE=${__mode} -P ${ZILLIANS_SCRIPT_PATH}/run_and_match.cmake)
+    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -DPATTERN=${__pattern} -DMATCH_MODE=${__mode} -P ${ZILLIANS_SCRIPT_PATH}/run_and_match.cmake)
+    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -DPATTERN=${__pattern} -DMATCH_TYPE=${__mode} -P ${ZILLIANS_SCRIPT_PATH}/run_and_match.cmake)
     add_dependencies(check runtest-${__target})
 
 endmacro()
@@ -266,8 +266,8 @@ macro(zillians_add_compare_output_test target_name expected_output)
     endif()
     
     # create test targets and set dependencies
-    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -DOUTPUT_LOCATION="/tmp/output.txt" -DEXPECTED_OUTPUT=${__expected_output} -P ${ZILLIANS_SCRIPT_PATH}/run_and_compare.cmake)
-    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -DOUTPUT_LOCATION="/tmp/output.txt" -DEXPECTED_OUTPUT=${__expected_output} -P ${ZILLIANS_SCRIPT_PATH}/run_and_compare.cmake)
+    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -DOUTPUT_LOCATION="/tmp/output.txt" -DEXPECTED_OUTPUT=${__expected_output} -P ${ZILLIANS_SCRIPT_PATH}/run_and_compare.cmake)
+    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -DOUTPUT_LOCATION="/tmp/output.txt" -DEXPECTED_OUTPUT=${__expected_output} -P ${ZILLIANS_SCRIPT_PATH}/run_and_compare.cmake)
     add_dependencies(check runtest-${__target})
 
 endmacro()
