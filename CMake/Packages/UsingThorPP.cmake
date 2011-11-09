@@ -86,6 +86,7 @@ MACRO(zillians_add_thorpp_gen)
             MESSAGE(FATAL_ERROR "file must exist!")
         ENDIF()
 
+        FILE(MAKE_DIRECTORY ${__output_path})
         SET(__input_stem "${__output_path}/${__input_name}") # do everything in output path
         STRING(REGEX REPLACE ${__input_ext} "${__output_ext}" gen_source_1 ${__input_stem})
 
@@ -188,6 +189,7 @@ MACRO(zillians_add_two_pass_thorpp_gen)
             MESSAGE(FATAL_ERROR "file must exist!")
         ENDIF()
 
+        FILE(MAKE_DIRECTORY ${__output_path})
         SET(__input_stem "${__output_path}/${__input_name}") # do everything in output path
         STRING(REGEX REPLACE ${__input_ext} "_intermediate.cpp" gen_source_1 ${__input_stem})
         STRING(REGEX REPLACE ${__input_ext} "${__output_ext}" gen_source_2 ${__input_stem})
