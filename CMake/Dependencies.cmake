@@ -20,6 +20,8 @@
 #
 
 # include custom macros
+include(CMakeParseArguments)
+
 include(ZilliansCommonUtility)
 include(ZilliansBufferGeneratorUtility)
 include(ZilliansHashmapUtility)
@@ -29,6 +31,8 @@ include(ZilliansCopyUtility)
 include(ZilliansPtxUtility)
 include(UsingGameNameTable)
 include(PCHSupport)
+
+include(ZilliansCompilerUtility)
 
 zillians_register_game(GAME_NAME "AtTargetTestClient"                         GAME_ID 0)
 zillians_register_game(GAME_NAME "AtTargetTestClient_qt4"                     GAME_ID 0)
