@@ -39,14 +39,16 @@ macro(zillians_thorscript_create_bundle)
     cmake_parse_arguments(zillians_thorscript_create_bundle "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     
     add_custom_target(${zillians_thorscript_create_bundle_TARGET})
+    add_dependencies(${zillians_thorscript_create_bundle_TARGET} tsc)
     
     # create temporary directory for creating bundle
     set(__ts_create_bundle_temporary_dir ${CMAKE_CURRENT_SOURCE_DIR}/create_bundle_temporary_dir)
-    file(MAKE_DIRECTORY ${__ts_create_bundle_temporary_dir})
     
     add_custom_command(
         TARGET ${zillians_thorscript_create_bundle_TARGET} PRE_BUILD
-        # remove existing build folder 
+        # create the temporary directory for creaing bundle
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${__ts_create_bundle_temporary_dir}
+        # remove existing build folder (if any) 
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${__ts_create_bundle_temporary_dir}/${zillians_thorscript_create_bundle_BUNDLE_NAME}
         # use tsc to generate project file
         COMMAND ${ThorScriptDriver} project create ${zillians_thorscript_create_bundle_BUNDLE_NAME}
