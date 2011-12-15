@@ -20,6 +20,15 @@
 #
 
 set(TSC_BINARY_PATH         ${CMAKE_CURRENT_BINARY_DIR}/compiler CACHE STRING "ThorScript Compiler Binary Path")
+set(TSC_BUNDLE_PATH         ${CMAKE_CURRENT_BINARY_DIR}/compiler/bundle CACHE STRING "ThorScript Compiler Bundle Path")
+
+if(EXISTS ${TSC_BINARY_PATH})
+    file(MAKE_DIRECTORY ${TSC_BINARY_PATH})
+endif()
+
+if(EXISTS ${TSC_BUNDLE_PATH})
+    file(MAKE_DIRECTORY ${TSC_BUNDLE_PATH})
+endif()
 
 set(ThorScriptBundler       ${TSC_BINARY_PATH}/ts-bundle)
 set(ThorScriptCompiler      ${TSC_BINARY_PATH}/ts-compile)
@@ -33,7 +42,7 @@ set(ThorScriptVM            ${TSC_BINARY_PATH}/ts-vm)
 
 macro(zillians_thorscript_create_bundle)
     set(options "")
-    set(oneValueArgs TARGET SOURCE BUNDLE_NAME OUTPUT)
+    set(oneValueArgs TARGET SOURCE BUNDLE_NAME OUTPUT_PATH)
     set(multiValueArgs "")
 
     cmake_parse_arguments(zillians_thorscript_create_bundle "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -41,13 +50,17 @@ macro(zillians_thorscript_create_bundle)
     add_custom_target(${zillians_thorscript_create_bundle_TARGET})
     add_dependencies(${zillians_thorscript_create_bundle_TARGET} tsc)
     
-    # create temporary directory for creating bundle
-    set(__ts_create_bundle_temporary_dir ${CMAKE_CURRENT_SOURCE_DIR}/create_bundle_temporary_dir)
+    # temporary directory for creating bundle
+    set(__ts_create_bundle_temporary_dir ${CMAKE_CURRENT_BINARY_DIR}/create_bundle_temporary_dir)
     
     add_custom_command(
         TARGET ${zillians_thorscript_create_bundle_TARGET} PRE_BUILD
         # create the temporary directory for creaing bundle
         COMMAND ${CMAKE_COMMAND} -E make_directory ${__ts_create_bundle_temporary_dir}
+        )
+            
+    add_custom_command(
+        TARGET ${zillians_thorscript_create_bundle_TARGET} PRE_BUILD
         # remove existing build folder (if any) 
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${__ts_create_bundle_temporary_dir}/${zillians_thorscript_create_bundle_BUNDLE_NAME}
         # use tsc to generate project file
@@ -64,5 +77,31 @@ macro(zillians_thorscript_create_bundle)
         COMMAND ${ThorScriptDriver} generate bundle
         WORKING_DIRECTORY ${__ts_create_bundle_temporary_dir}/${zillians_thorscript_create_bundle_BUNDLE_NAME}
         )
-        
+
+    add_custom_command(
+        TARGET ${zillians_thorscript_create_bundle_TARGET} PRE_BUILD
+        # copy created bundle file into the output location
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${__ts_create_bundle_temporary_dir}/${zillians_thorscript_create_bundle_BUNDLE_NAME}/build/bin/${zillians_thorscript_create_bundle_BUNDLE_NAME}.bundle ${zillians_thorscript_create_bundle_OUTPUT_PATH}/${zillians_thorscript_create_bundle_BUNDLE_NAME}.bundle
+        )
+endmacro()
+
+macro(zillians_thorscript_bundle_extract_ast)
+    set(options "")
+    set(oneValueArgs TARGET SOURCE_BUNDLE BUNDLE_NAME OUTPUT_PATH)
+    set(multiValueArgs "")
+
+    cmake_parse_arguments(zillians_thorscript_bundle_extract_ast "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    
+    add_custom_target(${zillians_thorscript_bundle_extract_ast_TARGET})
+    add_dependencies(${zillians_thorscript_bundle_extract_ast_TARGET} ts-bundle)
+
+    # temporary directory for extracting ast from bundle
+    set(zillians_thorscript_bundle_extract_ast_dir ${CMAKE_CURRENT_BINARY_DIR}/extract_ast_from_bundle)
+
+    add_custom_command(TARGET ${zillians_thorscript_bundle_extract_ast_TARGET} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E remove_directory ${zillians_thorscript_bundle_extract_ast_dir}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${zillians_thorscript_bundle_extract_ast_dir}
+        COMMAND ${ThorScriptBundler} -d ${zillians_thorscript_bundle_extract_ast_SOURCE_BUNDLE} --build-path=${zillians_thorscript_bundle_extract_ast_dir} 
+        COMMAND ${CMAKE_COMMAND} -E copy ${zillians_thorscript_bundle_extract_ast_dir}/*/*.ast ${zillians_thorscript_bundle_extract_ast_OUTPUT_PATH}/${zillians_thorscript_bundle_extract_ast_BUNDLE_NAME}.ast
+        )
 endmacro()
