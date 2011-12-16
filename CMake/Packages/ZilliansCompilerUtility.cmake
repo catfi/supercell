@@ -19,8 +19,8 @@
 # Contact Information: info@zillians.com
 #
 
-set(TSC_BINARY_PATH         ${CMAKE_CURRENT_BINARY_DIR}/compiler CACHE STRING "ThorScript Compiler Binary Path")
-set(TSC_BUNDLE_PATH         ${CMAKE_CURRENT_BINARY_DIR}/compiler/bundle CACHE STRING "ThorScript Compiler Bundle Path")
+set(TSC_BINARY_PATH         ${EXECUTABLE_OUTPUT_PATH}/compiler CACHE STRING "ThorScript Compiler Binary Path")
+set(TSC_BUNDLE_PATH         ${EXECUTABLE_OUTPUT_PATH}/compiler/bundle CACHE STRING "ThorScript Compiler Bundle Path")
 
 if(EXISTS ${TSC_BINARY_PATH})
     file(MAKE_DIRECTORY ${TSC_BINARY_PATH})

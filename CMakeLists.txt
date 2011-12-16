@@ -217,6 +217,10 @@ add_custom_target(check)
 ENABLE_TESTING()
 INCLUDE(Dart)
 
+# set default executable path
+SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE PATH "Default executable path" FORCE)
+SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib  CACHE PATH "Default library path" FORCE)
+
 INCLUDE(Dependencies)
 
 # define CUDA-related constants by either probing or user-defined value
@@ -277,10 +281,6 @@ IF(ENABLE_FEATURE_CUDA)
         MESSAGE(FATAL_ERROR "Please upgrade CUDA toolkit to 3.2 or later")
     ENDIF()
 ENDIF()
-
-# set default executable path
-SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE PATH "Default executable path" FORCE)
-SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib  CACHE PATH "Default library path" FORCE)
 
 # base64 library contributed by Chris Venter
 #ADD_SUBDIRECTORY(dep/base64)
