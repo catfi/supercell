@@ -12,6 +12,7 @@ IF(NOT WIN32)
 
     FIND_PATH(LIBCONFIG_LIBRARIES libconfig++.so 
         /usr/lib
+	/usr/lib64
         )
     
     IF( LIBCONFIG_LIBRARIES )
