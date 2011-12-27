@@ -24,7 +24,7 @@ IF(NOT WIN32)
     
     IF( THRIFT_LIBRARIES )
       SET( THRIFT_LIBRARIES ${THRIFT_LIBRARIES}/libthrift.so )
-    ELSE
+    ELSE()
     	FIND_PATH(THRIFT_LIBRARIES libthrift.so.0 /usr/lib64 /usr/lib /usr/local/lib)
 	IF( THRIFT_LIBRARIES )
       		SET( THRIFT_LIBRARIES ${THRIFT_LIBRARIES}/libthrift.so.0 )
