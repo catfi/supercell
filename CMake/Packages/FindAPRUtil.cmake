@@ -23,7 +23,9 @@ IF(WIN32)
 ELSE()
     FIND_PATH(APRUTIL_INCLUDE_DIR apu.h PATHS 
     	/usr/include/apr-1.0/
+    	/usr/include/apr-1/
     	/usr/local/include/apr-1.0/
+    	/usr/local/include/apr-1/
     	${CMAKE_SOURCE_DIR}/dep/linux/apr/include/
     	)
     IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
