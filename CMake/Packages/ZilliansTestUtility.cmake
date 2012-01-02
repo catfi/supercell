@@ -145,15 +145,15 @@ macro(zillians_add_simple_test)
     get_target_property(__location_${__target} ${__target} LOCATION)
     
     # create test targets and set dependencies
-    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
-    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
+    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
+    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
     add_dependencies(check runtest-${__target})
 
 endmacro()
 
 macro(zillians_add_complex_test)
     # parse the argument options
-    set(__option_catalogries "TARGET;SHELL;DEPENDS")
+    set(__option_catalogries "TARGET;SHELL;DEPENDS;EXPECT_FAIL")
     set(__temporary_options_variable ${ARGN})
     split_options(__temporary_options_variable "default" __option_catalogries __options_set) 
     
@@ -161,6 +161,7 @@ macro(zillians_add_complex_test)
     hashmap(GET __options_set "TARGET" __target)
     hashmap(GET __options_set "SHELL" __shell)
     hashmap(GET __options_set "DEPENDS" __depends)
+    hashmap(GET __options_set "EXPECT_FAIL" __expect_fail)
     list(LENGTH __target __number_of_targets)
     list(LENGTH __shell __number_of_shell)
     list(LENGTH __depends __number_of_depends)
@@ -176,26 +177,23 @@ macro(zillians_add_complex_test)
     
     set( cmd_string )
     foreach( cmd ${__shell} )
-        set( cmd_string ${cmd_string} ${cmd} ) 
+        set( cmd_string ${cmd_string} ${cmd} )
     endforeach( cmd )
     
-    # get the target location
-    get_target_property(__location_${__target} ${__target} LOCATION)
-    
     # create test targets and set dependencies
-    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG="${__shell}" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
-    if( __number_of_depends EQUAL 0 )
-        if(TARGET ${__target})
-            add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${cmd_string} )
-        else()
-            add_custom_target(runtest-${__target} COMMAND ${cmd_string} )
-        endif()
+    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING="${__shell}" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake)
+    if( __expect_fail )
+        set( cmd_string ${CMAKE_COMMAND} -DTEST_PROG:STRING="${cmd_string}" -DEXPECT_FAIL="TRUE" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake )
     else()
-        if(TARGET ${__target})
-            add_custom_target(runtest-${__target} DEPENDS ${__target} ${__depends} COMMAND ${cmd_string} )
-        else()
-            add_custom_target(runtest-${__target} DEPENDS ${__depends} COMMAND ${cmd_string} )
-        endif()
+        set( cmd_string ${CMAKE_COMMAND} -DTEST_PROG:STRING="${cmd_string}" -P ${ZILLIANS_SCRIPT_PATH}/run.cmake )
+    endif()
+    if( __number_of_depends EQUAL 0 )
+        add_custom_target(runtest-${__target} COMMAND ${cmd_string} )
+    else()
+        add_custom_target(runtest-${__target} DEPENDS ${__depends} COMMAND ${cmd_string} )
+    endif()
+    if(TARGET ${__target})
+        add_dependencies(runtest-${__target} ${__target})
     endif()
     add_dependencies(check runtest-${__target})
 
@@ -230,8 +228,8 @@ macro(zillians_add_regex_match_output_test)
     get_target_property(__location_${__target} ${__target} LOCATION)
     
     # create test targets and set dependencies
-    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -DPATTERN=${__pattern} -DMATCH_MODE=${__mode} -P ${ZILLIANS_SCRIPT_PATH}/run_and_match.cmake)
-    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -DPATTERN=${__pattern} -DMATCH_TYPE=${__mode} -P ${ZILLIANS_SCRIPT_PATH}/run_and_match.cmake)
+    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -DPATTERN=${__pattern} -DMATCH_MODE=${__mode} -P ${ZILLIANS_SCRIPT_PATH}/run_and_match.cmake)
+    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -DPATTERN=${__pattern} -DMATCH_TYPE=${__mode} -P ${ZILLIANS_SCRIPT_PATH}/run_and_match.cmake)
     add_dependencies(check runtest-${__target})
 
 endmacro()
@@ -268,8 +266,8 @@ macro(zillians_add_compare_output_test target_name expected_output)
     endif()
     
     # create test targets and set dependencies
-    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -DOUTPUT_LOCATION="/tmp/output.txt" -DEXPECTED_OUTPUT=${__expected_output} -P ${ZILLIANS_SCRIPT_PATH}/run_and_compare.cmake)
-    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG=${__location_${__target}} -DOUTPUT_LOCATION="/tmp/output.txt" -DEXPECTED_OUTPUT=${__expected_output} -P ${ZILLIANS_SCRIPT_PATH}/run_and_compare.cmake)
+    add_test(NAME runtest-${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -DOUTPUT_LOCATION="/tmp/output.txt" -DEXPECTED_OUTPUT=${__expected_output} -P ${ZILLIANS_SCRIPT_PATH}/run_and_compare.cmake)
+    add_custom_target(runtest-${__target} DEPENDS ${__target} COMMAND ${CMAKE_COMMAND} -DTEST_PROG:STRING=${__location_${__target}} -DOUTPUT_LOCATION="/tmp/output.txt" -DEXPECTED_OUTPUT=${__expected_output} -P ${ZILLIANS_SCRIPT_PATH}/run_and_compare.cmake)
     add_dependencies(check runtest-${__target})
 
 endmacro()

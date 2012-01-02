@@ -1,6 +1,6 @@
 #
 # Zillians MMO
-# Copyright (C) 2007-2010 Zillians.com, Inc.
+# Copyright (C) 2007-2011 Zillians.com, Inc.
 # For more information see http://www.zillians.com
 #
 # Zillians MMO is the library and runtime for massive multiplayer online game
@@ -217,6 +217,10 @@ add_custom_target(check)
 ENABLE_TESTING()
 INCLUDE(Dart)
 
+# set default executable path
+SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE PATH "Default executable path" FORCE)
+SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib  CACHE PATH "Default library path" FORCE)
+
 INCLUDE(Dependencies)
 
 # define CUDA-related constants by either probing or user-defined value
@@ -278,10 +282,6 @@ IF(ENABLE_FEATURE_CUDA)
     ENDIF()
 ENDIF()
 
-# set default executable path
-SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE PATH "Default executable path" FORCE)
-SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib  CACHE PATH "Default library path" FORCE)
-
 # base64 library contributed by Chris Venter
 #ADD_SUBDIRECTORY(dep/base64)
 
@@ -304,16 +304,16 @@ SET(DEFAULT_DOCUMENT_PATH ${CMAKE_CURRENT_BINARY_DIR}/docs)
 # for cloude default machine
 SET( ZILLIANS_DB_SERVER	"g3" CACHE STRING "Zillians's default Database Server Address")
 SET( ZILLIANS_MANAGEMENT_PORT "9090" CACHE STRING "Zillians's default Management Server Port")
-SET( ZILLIANS_HOME	"${CMAKE_SOURCE_DIR}" CACHE STRING "ZilliansHome - $ZILLIANS_HOME ")
-SET( ZILLIANS_INC	"${CMAKE_SOURCE_DIR}/inc/" CACHE STRING "ZilliansHome - $ZILLIANS_HOME ")
-SET( ZCC    "${CMAKE_SOURCE_DIR}/bin/zcc" CACHE STRING "ZCC Specific ")
-SET( ZCC_GW "${CMAKE_SOURCE_DIR}/bin/zcc" CACHE STRING "ZCC_GW Specific ") 
-SET( ZCC_WS "${CMAKE_SOURCE_DIR}/bin/zcc" CACHE STRING "ZCC_WS Specific ")
-SET( ZCC_BC "${CMAKE_SOURCE_DIR}/bin/zcc-bc" CACHE STRING "ZCC_BC Specific ") 
-SET( ZILLIANS_LLC   "${CMAKE_SOURCE_DIR}/bin/zillians-llc" CACHE STRING "zillians llc specific ")
-SET( ZILLIANS_LD    "${CMAKE_SOURCE_DIR}/bin/zillians-ld" CACHE STRING "zillians ld specific ")
-SET( ZCC_STUB_DISPATCH "${CMAKE_SOURCE_DIR}/bin/zillians-stub-gen" CACHE STRING "ZCC_STUB_DISPATCH Specific ")
-SET( COG_TOOL "cog.py" CACHE STRING "Python Cog Specific ")
+SET( ZILLIANS_HOME	"${CMAKE_SOURCE_DIR}" CACHE STRING "ZilliansHome - $ZILLIANS_HOME")
+SET( ZILLIANS_INC	"${CMAKE_SOURCE_DIR}/inc/" CACHE STRING "ZilliansHome - $ZILLIANS_HOME")
+SET( ZCC    "${EXECUTABLE_OUTPUT_PATH}/zcc" CACHE STRING "ZCC Specific")
+SET( ZCC_GW "${EXECUTABLE_OUTPUT_PATH}/zcc" CACHE STRING "ZCC_GW Specific") 
+SET( ZCC_WS "${EXECUTABLE_OUTPUT_PATH}/zcc" CACHE STRING "ZCC_WS Specific")
+SET( ZCC_BC "${EXECUTABLE_OUTPUT_PATH}/zcc-bc" CACHE STRING "ZCC_BC Specific") 
+SET( ZILLIANS_LLC   "${EXECUTABLE_OUTPUT_PATH}/zillians-llc" CACHE STRING "zillians llc specific")
+SET( ZILLIANS_LD    "${EXECUTABLE_OUTPUT_PATH}/zillians-ld" CACHE STRING "zillians ld specific")
+SET( ZCC_STUB_DISPATCH "${EXECUTABLE_OUTPUT_PATH}/zillians-stub-gen" CACHE STRING "ZCC_STUB_DISPATCH Specific")
+SET( ThorScriptDocGenerator "${EXECUTABLE_OUTPUT_PATH}/ts-doc" CACHE STRING "ThorScript Doc Generator Specific")
 
 SET( ZCC_LIT_TEST_REPEAT "1" CACHE STRING "Zcc+Lit Test suite repleat time")
 SET( LIT_OPTIONS	-v --shuffle)

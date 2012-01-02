@@ -20,15 +20,19 @@
 #
 
 # include custom macros
+include(CMakeParseArguments)
+
 include(ZilliansCommonUtility)
 include(ZilliansBufferGeneratorUtility)
 include(ZilliansHashmapUtility)
 include(ZilliansOptionUtility)
 include(ZilliansTestUtility)
-include(ZilliansCopyUtility)
+#include(ZilliansCopyUtility)
 include(ZilliansPtxUtility)
 include(UsingGameNameTable)
 include(PCHSupport)
+
+include(ZilliansCompilerUtility)
 
 zillians_register_game(GAME_NAME "AtTargetTestClient"                         GAME_ID 0)
 zillians_register_game(GAME_NAME "AtTargetTestClient_qt4"                     GAME_ID 0)
@@ -63,6 +67,7 @@ zillians_register_game(GAME_NAME "localTestSOH"                               GA
 zillians_register_game(GAME_NAME "Emu"                                        GAME_ID 0)
 zillians_register_game(GAME_NAME "SimpleTextClientTest-SingleCommand"         GAME_ID 0)
 zillians_register_game(GAME_NAME "SimpleTest"                                 GAME_ID 0)
+zillians_register_game(GAME_NAME "PaperScissorsRock"                          GAME_ID 0)
 
 zillians_register_game(GAME_NAME "ScheduleAPITest"                            GAME_ID 0)
 
@@ -140,6 +145,24 @@ ENDIF()
 FIND_PACKAGE(Graphviz)
 IF(GRAPHVIZ_FOUND)
     MESSAGE( "-- Found Graphviz" )
+ENDIF()
+
+##########################################################################
+FIND_PACKAGE(XDot)
+IF(XDOT_FOUND)
+    MESSAGE( "-- Found XDot" )
+ENDIF()
+
+##########################################################################
+FIND_PACKAGE(Cog REQUIRED)
+IF(COG_FOUND)
+    MESSAGE( "-- Found Cog" )
+ENDIF()
+
+##########################################################################
+FIND_PACKAGE(ThorPP REQUIRED)
+IF(THORPP_FOUND)
+    MESSAGE( "-- Found ThorPP" )
 ENDIF()
 
 ##########################################################################
@@ -379,6 +402,20 @@ IF( OPENSSL_FOUND )
 ENDIF()
 
 ##########################################################################
+# Find "PythonLibs"
+FIND_PACKAGE(PythonLibs)
+IF( PYTHONLIBS_FOUND )
+    message( "-- Found PythonLibs" )
+ENDIF()
+
+##########################################################################
+# Find "ZLIB"
+FIND_PACKAGE(ZLIB)
+IF( ZLIB_FOUND )
+    message( "-- Found Zlib Version (${ZLIB_VERSION_STRING})" )
+ENDIF()
+
+##########################################################################
 # Add build-enable preprocessors to global compilation definition
 IF(APRCORE_FOUND)
 	ADD_DEFINITIONS(-DBUILD_WITH_APRCORE)
@@ -467,6 +504,10 @@ ENDIF(RABBITMQ_FOUND)
 IF(JUSTTHREAD_FOUND)
 	ADD_DEFINITIONS(-DBUILD_WITH_JUSTTHREAD)
 ENDIF(JUSTTHREAD_FOUND)
+
+IF(PYTHONLIBS_FOUND)
+    ADD_DEFINITIONS(-DBUILD_WITH_PYTHONLIBS)
+ENDIF(PYTHONLIBS_FOUND)
 
 ##########################################################################
 # Add all header paths to default search
@@ -561,6 +602,14 @@ IF(JUSTTHREAD_FOUND)
 	LIST(APPEND ZILLIANS_INCLUDE_DIRS ${JUSTTHREAD_INCLUDE_DIR})
 ENDIF(JUSTTHREAD_FOUND)
 
+IF(PYTHONLIBS_FOUND)
+    LIST(APPEND ZILLIANS_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
+ENDIF(PYTHONLIBS_FOUND)
+
+IF(ZLIB_FOUND)
+    LIST(APPEND ZILLIANS_INCLUDE_DIRS ${ZLIB_INCLUDE_DIRS})
+ENDIF(ZLIB_FOUND)
+
 INCLUDE_DIRECTORIES(
 		${ZILLIANS_INCLUDE_DIRS}
 		)
@@ -623,6 +672,10 @@ IF(TBB_FOUND)
 	LIST(APPEND ZILLIANS_DEP_LIBS ${TBB_LIBRARIES})
 ENDIF(TBB_FOUND)
 
+IF(ZLIB_FOUND)
+	LIST(APPEND ZILLIANS_DEP_LIBS ${ZLIB_LIBRARIES})
+ENDIF(ZLIB_FOUND)
+
 #IF(RDMA_FOUND)
     #LIST(APPEND ZILLIANS_DEP_LIBS "/usr/lib/librdmacm.a;/usr/lib/libibverbs.a")
 	#LIST(APPEND ZILLIANS_DEP_LIBS ${RDMA_LIBRARIES})
@@ -632,6 +685,10 @@ ENDIF(TBB_FOUND)
 #    SET(RDMA_FOUND TRUE)
 #        ADD_DEFINITIONS(-DBUILD_WITH_RDMA)
 #ENDIF()
+
+IF(PYTHONLIBS_FOUND)
+    LIST(APPEND ZILLIANS_DEP_LIBS ${PYTHON_LIBRARIES})
+ENDIF(PYTHONLIBS_FOUND)
 
 SET(ZILLIANS_DEP_LIBS ${ZILLIANS_DEP_LIBS} CACHE STRING "Gloabl depencent libraries" FORCE)
 MESSAGE(STATUS "The global dependecies: ${ZILLIANS_DEP_LIBS}")
