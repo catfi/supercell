@@ -20,12 +20,12 @@ IF(NOT WIN32)
       
       #  /usr/lib
        # )
-    FIND_PATH(THRIFT_LIBRARIES libthrift.so /usr/lib64 /usr/lib /usr/local/lib)
-    
+    FIND_PATH(THRIFT_LIBRARIES libthrift.so PATHS /usr/lib /usr/local/lib)
+    MESSAGE(STATUS THRIFT_LIBRARYS=${THRIFT_LIBRARIES} )
     IF( THRIFT_LIBRARIES )
       SET( THRIFT_LIBRARIES ${THRIFT_LIBRARIES}/libthrift.so )
     ELSE()
-    	FIND_PATH(THRIFT_LIBRARIES libthrift.so.0 /usr/lib64 /usr/lib /usr/local/lib)
+    	FIND_PATH(THRIFT_LIBRARIES libthrift.so.0 PATHS /usr/lib64 /usr/lib /usr/local/lib)
 	IF( THRIFT_LIBRARIES )
       		SET( THRIFT_LIBRARIES ${THRIFT_LIBRARIES}/libthrift.so.0 )
 	ENDIF()
